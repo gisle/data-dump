@@ -6,6 +6,7 @@ README
 t/dump.t
 t/eval.t
 t/quote.t
+t/quote-unicode.t
 t/regexp.t
 t/scalar-obj.t
 t/scalar.t
