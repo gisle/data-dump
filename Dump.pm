@@ -182,7 +182,7 @@ sub _dump
 		next unless defined $gval;
 		next if $k eq "SCALAR" && ! defined $$gval;  # always there
 		my $f = scalar @fixup;
-		push(@fixup, "RESERVED");  # filled out after _dump()
+		push(@fixup, "RESERVED");  # overwritten after _dump() below
 		$gval = _dump($gval, $name, [@$idx, "*{$k}"]);
 		$refcnt{$name}++;
 		my $gname = fullname($name, $idx);
