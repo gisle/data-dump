@@ -1,47 +1,28 @@
-NAME
-    Data::Dump - Pretty printing of data structures
+BEWARE!! The is only an alpha release of experimental code.  You
+should be prepared that the interface will change or that the module
+will simply go away in the future.
 
-SYNOPSIS
+This package contain the Data::Dump module.  It is a simplification of
+Sarathy's Data::Dumper.  I made it to demonstrate for Sarathy how I
+would like Data::Dumper to work, and found it useful myself.  Sarathy
+have plans to integrate this with his dumper, but while we wait, you
+can test this out.
+
+The Data::Dump module provide a single function called dump() which
+you can import to your namespace if you wish:
+
      use Data::Dump qw(dump);
-
-     $str = dump(@list)
+     $str = dump(@list);
      @copy_of_list = eval $str;
 
-DESCRIPTION
-    This module provide a single function called dump() that takes a list of
-    values as argument and produce a string as result. The string contains
-    perl code that when eval-ed will produce a deep copy of the original
-    arguments. The string is formatted for easy reading.
+No OO interface is available and there are no configuration options to
+worry about. Other benefits is that the dump produced does not try to
+set any variables. It only returns what is needed to produce a
+copy. It means that `dump("foo")' simply returns `"foo"', and
+`dump(1..5)' simply returns `(1, 2, 3, 4, 5)'.
 
-    If dump() is called in void context, then the dump will be printed on
-    STDERR instead of being returned.
+Copyright 1998 Gisle Aas.
+Copyright 1996-1998 Gurusamy Sarathy.
 
-    If you don't like to import a function that overrides Perl's not-so-
-    useful builtin, then you can also import the same function as pp(),
-    mnemonic for "pretty-print".
-
-HISTORY
-    The `Data::Dump' module grew out of frustration with Sarathy's in-most-
-    cases-excellent `Data::Dumper'. Basic ideas and some code is shared with
-    Sarathy's module.
-
-    The `Data::Dump' module provide a much simpler interface than
-    `Data::Dumper'. No OO interface is available and there are no
-    configuration options to worry about (yet :-). The other benefit is that
-    the dump produced does not try to set any variables. It only returns
-    what is needed to produce a copy. It means that `dump("foo")' simply
-    returns `"foo"', and `dump(1..5)' simply returns `(1, 2, 3, 4, 5)'.
-
-SEE ALSO
-    the Data::Dumper manpage, the Storable manpage
-
-AUTHORS
-    The `Data::Dump' module is written by Gisle Aas <gisle@aas.no>, based on
-    `Data::Dumper' by Gurusamy Sarathy <gsar@umich.edu>.
-
-     Copyright 1998 Gisle Aas.
-     Copyright 1996-1998 Gurusamy Sarathy.
-
-    This library is free software; you can redistribute it and/or modify it
-    under the same terms as Perl itself.
-
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
