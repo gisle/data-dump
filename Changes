@@ -1,3 +1,14 @@
+2004-11-11  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.05
+
+   Improved track scalar references; dump() ended up
+   recursing forever on some cyclic structures.
+
+   More tests.
+
+
+
 2004-11-05  Gisle Aas <gisle@ActiveState.com>
 
    Release 1.04
