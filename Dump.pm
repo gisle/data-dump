@@ -8,7 +8,7 @@ require Exporter;
 @EXPORT_OK=qw(dump pp);
 
 $VERSION = "0.03";  # $Date$
-$DEBUG = 0;
+$DEBUG = 1;
 
 use overload ();
 use vars qw(%seen %refcnt @dump @fixup %require);
@@ -201,28 +201,45 @@ sub _dump
     }
     elsif ($type eq "HASH") {
 	my(@keys, @vals);
-	my $max_klen = 0;
+
+	require Statistics::Descriptive;
+	my $keystat = Statistics::Descriptive::Sparse->new();
+	
 	for my $key (sort keys %$rval) {
 	    my $val = \$rval->{$key};
 	    $key = quote($key) if $key !~ /^[a-zA-Z_]\w*$/ ||
 #		                  length($key) > 20        ||
 		                  $is_perl_keyword{$key};
-	    my $klen = length $key;
-	    $max_klen = $klen if $max_klen < $klen;
+	    $keystat->add_data(length $key);
 	    push(@keys, $key);
 	    push(@vals, _dump($$val, $name, [@$idx, "{$key}"]));
 	}
-	$max_klen = 15 if $max_klen > 15;
 	my $nl = "";
+	my $klen_pad = 0;
 	my $tmp = "@keys @vals";
-	$nl = "\n" if length($tmp) > 70 || $tmp =~ /\n/;
+	if (length($tmp) > 70 || $tmp =~ /\n/) {
+	    $nl = "\n";
+
+	    if ($keystat->count > 1) {
+		# Determine if we should let the keys line up or not.
+		my $scaled_dev = $keystat->standard_deviation / $keystat->mean;
+		if ($scaled_dev < 0.8) {
+		    $klen_pad = $keystat->max;
+		}
+		# If we use 
+		if ($DEBUG) {
+		    push(@keys, "__SCALED_DEV__");
+		    push(@vals, $scaled_dev);
+		}
+	    }
+	}
 	$out = "{$nl";
 	while (@keys) {
 	    my $key = shift @keys;
 	    my $val = shift @vals;
-	    my $pad = " " x ($max_klen + 6);
+	    my $pad = " " x ($klen_pad + 6);
 	    $val =~ s/\n/\n$pad/gm;
-	    $key = " $key" . " " x ($max_klen - length($key)) if $nl;
+	    $key = " $key" . " " x ($klen_pad - length($key)) if $nl;
 	    $out .= " $key => $val,$nl";
 	}
 	$out =~ s/,$/ / unless $nl;
