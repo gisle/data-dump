@@ -443,29 +443,29 @@ Data::Dump - Pretty printing of data structures
 
 =head1 DESCRIPTION
 
-This module provide a single function called dump() that takes a list
-of values as argument and produce a string as result.  The string
-contains perl code that when C<eval>ed will produce a deep copy of the
+This module provides a single function called dump() that takes a list
+of values as its argument and produces a string as its result.  The string
+contains Perl code that, when C<eval>ed, produces a deep copy of the
 original arguments.  The string is formatted for easy reading.
 
-If dump() is called in void context, then the dump will be printed on
+If dump() is called in a void context, then the dump is printed on
 STDERR instead of being returned.
 
-If you don't like to import a function that overrides Perl's
+If you don't like importing a function that overrides Perl's
 not-so-useful builtin, then you can also import the same function as
 pp(), mnemonic for "pretty-print".
 
 =head1 HISTORY
 
 The C<Data::Dump> module grew out of frustration with Sarathy's
-in-most-cases-excellent C<Data::Dumper>.  Basic ideas and some code is shared
+in-most-cases-excellent C<Data::Dumper>.  Basic ideas and some code are shared
 with Sarathy's module.
 
-The C<Data::Dump> module provide a much simpler interface than
+The C<Data::Dump> module provides a much simpler interface than
 C<Data::Dumper>.  No OO interface is available and there are no
 configuration options to worry about (yet :-).  The other benefit is
 that the dump produced does not try to set any variables.  It only
-returns what is needed to produce a copy of the arguments.  It means
+returns what is needed to produce a copy of the arguments.  This means
 that C<dump("foo")> simply returns C<"foo">, and C<dump(1..5)> simply
 returns C<(1, 2, 3, 4, 5)>.
 
