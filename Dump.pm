@@ -1,13 +1,14 @@
 package Data::Dump;
 
 use strict;
-use vars qw(@EXPORT_OK $VERSION);
+use vars qw(@EXPORT_OK $VERSION $DEBUG);
 
 require Exporter;
 *import = \&Exporter::import;
 @EXPORT_OK=qw(dump pp);
 
-$VERSION = "0.02";  # $Date$
+$VERSION = "0.03";  # $Date$
+$DEBUG = 0;
 
 use overload ();
 use vars qw(%seen %refcnt @dump @fixup %require);
@@ -116,18 +117,14 @@ sub _dump
     } else {
 	die "Can't parse " . overload::StrVal($rval);
     }
-
-    #print "$name-(@$idx) $class $type $id ($ref)\n";
-
+    warn "$name-(@$idx) $class $type $id ($ref)" if $DEBUG;
+    
     if (my $s = $seen{$id}) {
 	my($sname, $sidx) = @$s;
 	$refcnt{$sname}++;
-
-	#print "SEEN: $name/$idx => $sname/$sidx ($ref)\n";
 	my $sref = fullname($sname, $sidx);
-	if (!@$idx && !$ref) {
-	    $sref = "\${$sref}" unless $sref =~ s/^\\//;
-	}
+	warn "SEEN: [$name/@$idx] => [$sname/@$sidx] ($ref,$sref)" if $DEBUG;
+	$sref = "\\$sref" if $ref && $type eq "SCALAR";
 	return $sref unless $sname eq $name;
 	$refcnt{$name}++;
 	push(@fixup, fullname($name,$idx)." = $sref");
@@ -152,10 +149,11 @@ sub _dump
 		$out = quote($$rval);
 	    }
 	    if ($class && !@$idx) {
+		# Top is an object, not a reference to one as perl needs
 		$refcnt{$name}++;
 		my $obj = fullname($name, $idx);
 		my $cl  = quote($class);
-		push(@fixup, "bless $obj, $cl");
+		push(@fixup, "bless \\$obj, $cl");
 	    }
 	}
     }
@@ -241,30 +239,25 @@ sub fullname
 {
     my($name, $idx) = @_;
     substr($name, 0, 0) = "\$";
-    if (@$idx) {
-	my @i = @$idx;
-	shift(@i) if $i[0] eq "\$";  # cancels ref
-	while (@i && $i[0] eq "\$") {
-	    shift @i;
-	    $name = "\$$name";
-	}
-	my $last_was_index;
-	while (@i) {
-	    my $i = shift(@i);
-	    if ($i eq "*" || $i eq "\$") {
-		$last_was_index = 0;
-		$name = "$i\{$name}";
-	    } elsif ($i =~ s/^\*//) {
-		$name .= $i;
-		$last_was_index++;
-	    } else {
-		$name .= "->" unless $last_was_index++;
-		$name .= $i;
-	    }
-	}
+
+    my @i = @$idx;  # need copy in order to not modify @$idx
+    while (@i && $i[0] eq "\$") {
+	shift @i;
+	$name = "\$$name";
     }
-    else {
-	substr($name, 0, 0) = "\\";
+    
+    my $last_was_index;
+    for my $i (@i) {
+	if ($i eq "*" || $i eq "\$") {
+	    $last_was_index = 0;
+	    $name = "$i\{$name}";
+	} elsif ($i =~ s/^\*//) {
+	    $name .= $i;
+	    $last_was_index++;
+	} else {
+	    $name .= "->" unless $last_was_index++;
+	    $name .= $i;
+	}
     }
     $name;
 }
