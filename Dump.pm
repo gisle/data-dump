@@ -7,8 +7,8 @@ require Exporter;
 *import = \&Exporter::import;
 @EXPORT_OK=qw(dump pp);
 
-$VERSION = "0.03";  # $Date$
-$DEBUG = 1;
+$VERSION = "0.04";  # $Date$
+$DEBUG = 0;
 
 use overload ();
 use vars qw(%seen %refcnt @dump @fixup %require);
@@ -118,7 +118,7 @@ sub _dump
 	die "Can't parse " . overload::StrVal($rval);
     }
     warn "$name-(@$idx) $class $type $id ($ref)" if $DEBUG;
-    
+
     if (my $s = $seen{$id}) {
 	my($sname, $sidx) = @$s;
 	$refcnt{$sname}++;
@@ -133,7 +133,7 @@ sub _dump
     $seen{$id} = [$name, $idx];
 
     my $out;
-    if ($type eq "SCALAR") {
+    if ($type eq "SCALAR" || $type eq "REF") {
 	if ($ref) {
 	    delete $seen{$id};  # will be seen again shortly
 	    my $val = _dump($$rval, $name, [@$idx, "\$"]);
@@ -204,7 +204,7 @@ sub _dump
 
 	require Statistics::Descriptive;
 	my $keystat = Statistics::Descriptive::Sparse->new();
-	
+
 	for my $key (sort keys %$rval) {
 	    my $val = \$rval->{$key};
 	    $key = quote($key) if $key !~ /^[a-zA-Z_]\w*$/ ||
@@ -273,7 +273,7 @@ sub fullname
 	shift @i;
 	$name = "\$$name";
     }
-    
+
     my $last_was_index;
     for my $i (@i) {
 	if ($i eq "*" || $i eq "\$") {
@@ -419,7 +419,7 @@ L<Data::Dumper>, L<Storable>
 The C<Data::Dump> module is written by Gisle Aas <gisle@aas.no>, based
 on C<Data::Dumper> by Gurusamy Sarathy <gsar@umich.edu>.
 
- Copyright 1998-1999 Gisle Aas.
+ Copyright 1998-2000 Gisle Aas.
  Copyright 1996-1998 Gurusamy Sarathy.
 
 This library is free software; you can redistribute it and/or
