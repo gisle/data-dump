@@ -235,6 +235,7 @@ sub _dump
 		my $avg = $kstat_sum/$n;
 		my $stddev = sqrt(($kstat_sum2 - $n * $avg * $avg) / ($n - 1));
 
+		# I am not actually very happy with this heuristics
 		if ($stddev / $kstat_max < 0.25) {
 		    $klen_pad = $kstat_max;
 		}
