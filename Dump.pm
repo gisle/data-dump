@@ -364,7 +364,7 @@ Data::Dump - Pretty printing of data structures
 
 This module provide a single function called dump() that takes a list
 of values as argument and produce a string as result.  The string
-contains perl code that when eval-ed will produce a deep copy of the
+contains perl code that when C<eval>ed will produce a deep copy of the
 original arguments.  The string is formatted for easy reading.
 
 If dump() is called in void context, then the dump will be printed on
@@ -384,8 +384,8 @@ The C<Data::Dump> module provide a much simpler interface than
 C<Data::Dumper>.  No OO interface is available and there are no
 configuration options to worry about (yet :-).  The other benefit is
 that the dump produced does not try to set any variables.  It only
-returns what is needed to produce a copy.  It means that
-C<dump("foo")> simply returns C<"foo">, and C<dump(1..5)> simply
+returns what is needed to produce a copy of the arguments.  It means
+that C<dump("foo")> simply returns C<"foo">, and C<dump(1..5)> simply
 returns C<(1, 2, 3, 4, 5)>.
 
 =head1 SEE ALSO
@@ -397,7 +397,7 @@ L<Data::Dumper>, L<Storable>
 The C<Data::Dump> module is written by Gisle Aas <gisle@aas.no>, based
 on C<Data::Dumper> by Gurusamy Sarathy <gsar@umich.edu>.
 
- Copyright 1998 Gisle Aas.
+ Copyright 1998-1999 Gisle Aas.
  Copyright 1996-1998 Gurusamy Sarathy.
 
 This library is free software; you can redistribute it and/or
