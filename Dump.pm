@@ -7,7 +7,7 @@ require Exporter;
 *import = \&Exporter::import;
 @EXPORT_OK=qw(dump pp);
 
-$VERSION = "0.01";  # $Date$
+$VERSION = "0.02";  # $Date$
 
 use overload ();
 use vars qw(%seen %refcnt @dump @fixup %require);
@@ -227,11 +227,12 @@ sub _dump
 	$out = 'sub { "???" }';
     }
     else {
-	die "Can't handle $type data";
+	warn "Can't handle $type data";
+	$out = "'#$type#'";
     }
 
     if ($class && $ref) {
-	$out = "bless $out, " . quote($class);
+	$out = "bless($out, " . quote($class) . ")";
     }
     return $out;
 }
