@@ -17,11 +17,11 @@ you can import to your namespace if you wish:
 
 No OO interface is available and there are no configuration options to
 worry about. Other benefits is that the dump produced does not try to
-set any variables. It only returns what is needed to produce a
-copy. It means that `dump("foo")' simply returns `"foo"', and
-`dump(1..5)' simply returns `(1, 2, 3, 4, 5)'.
+set any variables. It only returns what is needed to produce a copy of
+the arguments passed in. It means that `dump("foo")' simply returns
+`"foo"', and `dump(1..5)' simply returns `(1, 2, 3, 4, 5)'.
 
-Copyright 1998 Gisle Aas.
+Copyright 1998-1999 Gisle Aas.
 Copyright 1996-1998 Gurusamy Sarathy.
 
 This library is free software; you can redistribute it and/or modify
