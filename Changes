@@ -1,5 +1,14 @@
 2003-10-06  Gisle Aas <gisle@ActiveState.com>
 
+   Release 1.01
+
+   Improved formatting of Regexp objects.  Put top level modifiers in
+   the normal place and smart selection of separators.
+
+
+
+2003-10-06  Gisle Aas <gisle@ActiveState.com>
+
    Release 1.00
 
    Support dumping of Regexp objects.
