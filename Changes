@@ -1,3 +1,15 @@
+1999-08-05  Gisle Aas <gisle@aas.no>
+
+   Release 0.03
+
+   Fixed the generation of references to nested scalars.
+
+   Separate thousands with _ in large integers.
+
+   More tests.
+
+
+
 1999-05-27  Gisle Aas <gisle@aas.no>
 
    Release 0.02
