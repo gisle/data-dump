@@ -1,3 +1,11 @@
+2004-04-13  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.03
+
+   Dump strings with chars with ord > 255 using \x{...} escapes.
+
+
+
 2003-12-18  Gisle Aas <gisle@ActiveState.com>
 
    Release 1.02
