@@ -1,5 +1,5 @@
 Changes
-Dump.pm
+lib/Data/Dump.pm
 MANIFEST
 Makefile.PL
 README
