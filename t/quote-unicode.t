@@ -2,7 +2,7 @@
 
 BEGIN {
     if ($] < 5.008) {
-	print "1..0\n";
+	print "1..0 # Skipped: perl-5.8 required\n";
 	exit;
     }
 }
