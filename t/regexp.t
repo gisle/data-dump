@@ -6,8 +6,34 @@ use Data::Dump;
 
 $a = {
    a => qr/Foo/,
-   b => qr,abc/,i,
+   b => qr,abc/,is,
+   c => qr/ foo /x,
+   d => qr/foo/msix,
+   e => qr//,
+   f => qr/
+     # hi there
+     how do this look
+   /x,
+   g => qr,///////,,
+   h => qr*/|,:*,
+   i => qr*/|,:#*,
 };
 
-print "not " unless Data::Dump::dump($a) eq '{ a => qr/(?-xism:Foo)/, b => qr/(?i-xsm:abc\/)/ }';
-print "ok 1\n";
+print "not " unless Data::Dump::dump($a) . "\n" eq <<'EOT'; print "ok 1\n";
+{
+  a => qr/Foo/,
+  b => qr|abc/|si,
+  c => qr/ foo /x,
+  d => qr/foo/msix,
+  e => qr//,
+  f => qr/
+            # hi there
+            how do this look
+          /x,
+  g => qr|///////|,
+  h => qr#/|,:#,
+  i => qr/\/|,:#/,
+}
+EOT
+
+#print Data::Dump::dump($a), "\n";
