@@ -1,0 +1,5 @@
+Dump.pm
+MANIFEST
+Makefile.PL
+README
+t/dump.t
