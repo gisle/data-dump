@@ -393,18 +393,18 @@ sub quote {
   s/([\a\b\t\n\f\r\e])/$esc{$1}/g;
 
   # no need for 3 digits in escape for these
-  s/([\0-\037])(?!\d)/'\\'.sprintf('%o',ord($1))/eg;
+  s/([\0-\037])(?!\d)/sprintf('\\%o',ord($1))/eg;
 
   if ($high) {
-      s/([\0-\037\177])/'\\'.sprintf('%03o',ord($1))/eg;
+      s/([\0-\037\177])/sprintf('\\%03o',ord($1))/eg;
       if ($high eq "iso8859") {
-          s/[\200-\240]/'\\'.sprintf('%o',ord($1))/eg;
+          s/[\200-\240]/sprintf('\\%o',ord($1))/eg;
       } elsif ($high eq "utf8") {
 #         use utf8;
 #         $str =~ s/([^\040-\176])/sprintf "\\x{%04x}", ord($1)/ge;
       }
   } else {
-      s/([\0-\037\177-\377])/'\\'.sprintf('%03o',ord($1))/eg;
+      s/([\0-\037\177-\377])/sprintf('\\%03o',ord($1))/eg;
   }
 
   if (length($_) > 40  && length($_) > (length($_[0]) * 2)) {
