@@ -1,3 +1,11 @@
+2004-11-12  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.06
+
+   Compatibility fix for bleadperl by David Dyck <david.dyck@fluke.com>.
+
+
+
 2004-11-11  Gisle Aas <gisle@ActiveState.com>
 
    Release 1.05
