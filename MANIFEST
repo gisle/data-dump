@@ -11,3 +11,4 @@ t/ref.t
 t/regexp.t
 t/scalar-obj.t
 t/scalar.t
+t/tied.t
