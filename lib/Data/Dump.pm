@@ -146,7 +146,7 @@ sub _dump
 		    $v = $2;
 		    $mod =~ s/-.*//;
 		}
-		
+
 		my $sep = '/';
 		my $sep_count = ($v =~ tr/\///);
 		if ($sep_count) {
