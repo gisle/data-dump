@@ -127,10 +127,11 @@ sub _dump
 	    $refcnt{$sname}++;
 	    my $sref = fullname($sname, $sidx,
 				($ref && $type eq "SCALAR"));
-	    warn "SEEN: [$name/@$idx] => [$sname/@$sidx] ($ref,$sref)" if $DEBUG;
+	    warn "SEEN: [\$$name(@$idx)] => [\$$sname(@$sidx)] ($ref,$sref)" if $DEBUG;
 	    return $sref unless $sname eq $name;
 	    $refcnt{$name}++;
 	    push(@fixup, fullname($name,$idx)." = $sref");
+	    return "do{my \$fix}" if @$idx && $idx->[-1] eq '$';
 	    return "'fix'";
 	}
 	$seen{$id} = [$name, $idx];
@@ -169,7 +170,7 @@ sub _dump
 		undef($class);
 	    }
 	    else {
-		delete $seen{$id};  # will be seen again shortly
+		delete $seen{$id} if $type eq "SCALAR";  # will be seen again shortly
 		my $val = _dump($$rval, $name, [@$idx, "\$"]);
 		$out = $class ? "do{\\(my \$o = $val)}" : "\\$val";
 	    }
