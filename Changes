@@ -1,3 +1,14 @@
+2000-09-11  Gisle Aas <gisle@ActiveState.com>
+
+   Release 0.04
+
+   Think harder about when to align hash values.
+
+   Compensate for the way references to references are stringified
+   in perl-5.7.0.
+   
+
+
 1999-08-05  Gisle Aas <gisle@aas.no>
 
    Release 0.03
