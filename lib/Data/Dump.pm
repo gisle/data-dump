@@ -382,7 +382,7 @@ sub format_list
 	return "\n" . ($comment ? "  # $comment\n" : "") .
                join(",\n", @elem, "");
     } else {
-	return join(", ", @_) 
+	return join(", ", @_);
     }
 }
 
