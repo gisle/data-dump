@@ -5,6 +5,8 @@
    Improved formatting of Regexp objects.  Put top level modifiers in
    the normal place and smart selection of separators.
 
+   Perl 5.6 or better required.
+
 
 
 2003-10-06  Gisle Aas <gisle@ActiveState.com>
