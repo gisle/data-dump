@@ -135,9 +135,17 @@ sub _dump
     my $out;
     if ($type eq "SCALAR" || $type eq "REF") {
 	if ($ref) {
-	    delete $seen{$id};  # will be seen again shortly
-	    my $val = _dump($$rval, $name, [@$idx, "\$"]);
-	    $out = $class ? "do{\\(my \$o = $val)}" : "\\$val";
+	    if ($class && $class eq "Regexp") {
+		my $v = "$rval";
+		$v =~ s,/,\\/,g;
+		$out = "qr/$v/";
+		undef($class);
+	    }
+	    else {
+		delete $seen{$id};  # will be seen again shortly
+		my $val = _dump($$rval, $name, [@$idx, "\$"]);
+		$out = $class ? "do{\\(my \$o = $val)}" : "\\$val";
+	    }
 	} else {
 	    if (!defined $$rval) {
 		$out = "undef";
