@@ -143,7 +143,14 @@ sub _dump
 		$out = "undef";
 	    }
 	    elsif ($$rval =~ /^-?[1-9]\d{0,8}$/ || $$rval eq "0") {
-		$out = $$rval;
+		if (length $$rval > 4) {
+		    # Separate thousands by _ to make it more readable
+		    $out = reverse $$rval;
+		    $out =~ s/(\d\d\d)(?=\d)/$1_/g;
+		    $out = reverse $out;
+		} else {
+		    $out = $$rval;
+		}
 	    }
 	    else {
 		$out = quote($$rval);
