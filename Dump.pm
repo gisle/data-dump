@@ -122,9 +122,9 @@ sub _dump
     if (my $s = $seen{$id}) {
 	my($sname, $sidx) = @$s;
 	$refcnt{$sname}++;
-	my $sref = fullname($sname, $sidx);
+	my $sref = fullname($sname, $sidx,
+			    ($ref && $type eq "SCALAR"));
 	warn "SEEN: [$name/@$idx] => [$sname/@$sidx] ($ref,$sref)" if $DEBUG;
-	$sref = "\\$sref" if $ref && $type eq "SCALAR";
 	return $sref unless $sname eq $name;
 	$refcnt{$name}++;
 	push(@fixup, fullname($name,$idx)." = $sref");
@@ -244,10 +244,14 @@ sub _dump
 
 sub fullname
 {
-    my($name, $idx) = @_;
+    my($name, $idx, $ref) = @_;
     substr($name, 0, 0) = "\$";
 
     my @i = @$idx;  # need copy in order to not modify @$idx
+    if ($ref && @i && $i[0] eq "\$") {
+	shift(@i);  # remove one deref
+	$ref = 0;
+    }
     while (@i && $i[0] eq "\$") {
 	shift @i;
 	$name = "\$$name";
@@ -266,6 +270,7 @@ sub fullname
 	    $name .= $i;
 	}
     }
+    $name = "\\$name" if $ref;
     $name;
 }
 
