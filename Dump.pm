@@ -202,34 +202,47 @@ sub _dump
     elsif ($type eq "HASH") {
 	my(@keys, @vals);
 
-	require Statistics::Descriptive;
-	my $keystat = Statistics::Descriptive::Sparse->new();
+	# statistics to determine variation in key lengths
+	my $kstat_max = 0;
+	my $kstat_sum = 0;
+	my $kstat_sum2 = 0;
 
 	for my $key (sort keys %$rval) {
 	    my $val = \$rval->{$key};
-	    $key = quote($key) if $key !~ /^[a-zA-Z_]\w*$/ ||
-#		                  length($key) > 20        ||
+	    $key = quote($key) if $key !~ /^[a-zA-Z_]\w*\z/ ||
+		                  length($key) > 20        ||
 		                  $is_perl_keyword{$key};
-	    $keystat->add_data(length $key);
+
+	    $kstat_max = length($key) if length($key) > $kstat_max;
+	    $kstat_sum += length($key);
+	    $kstat_sum2 += length($key)*length($key);
+
 	    push(@keys, $key);
 	    push(@vals, _dump($$val, $name, [@$idx, "{$key}"]));
 	}
 	my $nl = "";
 	my $klen_pad = 0;
 	my $tmp = "@keys @vals";
-	if (length($tmp) > 70 || $tmp =~ /\n/) {
+	if (length($tmp) > 60 || $tmp =~ /\n/) {
 	    $nl = "\n";
 
-	    if ($keystat->count > 1) {
-		# Determine if we should let the keys line up or not.
-		my $scaled_dev = $keystat->standard_deviation / $keystat->mean;
-		if ($scaled_dev < 0.8) {
-		    $klen_pad = $keystat->max;
+	    # Determine what padding to add
+	    if ($kstat_max < 4) {
+		$klen_pad = $kstat_max;
+	    }
+	    elsif (@keys >= 2) {
+		my $n = @keys;
+		my $avg = $kstat_sum/$n;
+		my $stddev = sqrt(($kstat_sum2 - $n * $avg * $avg) / ($n - 1));
+
+		if ($stddev / $kstat_max < 0.25) {
+		    $klen_pad = $kstat_max;
 		}
-		# If we use 
 		if ($DEBUG) {
-		    push(@keys, "__SCALED_DEV__");
-		    push(@vals, $scaled_dev);
+		    push(@keys, "__S");
+		    push(@vals, sprintf("%.2f (%d/%.1f/%.1f)",
+					$stddev / $kstat_max,
+					$kstat_max, $avg, $stddev));
 		}
 	    }
 	}
