@@ -407,7 +407,7 @@ sub quote {
       }
   } else {
       s/([\0-\037\177-\377])/sprintf('\\x%02X',ord($1))/eg;
-      s/([^\0-\176])/sprintf('\\x{%X}',ord($1))/eg;
+      s/([^\040-\176])/sprintf('\\x{%X}',ord($1))/eg;
   }
 
   if (length($_) > 40  && !/\\x\{/ && length($_) > (length($_[0]) * 2)) {
