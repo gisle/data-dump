@@ -119,6 +119,9 @@ sub _dump
     } else {
 	die "Can't parse " . overload::StrVal($rval);
     }
+    if ($] < 5.008 && $type eq "SCALAR") {
+	$type = "REF" if $ref eq "REF";
+    }
     warn "\$$name(@$idx) $class $type $id ($ref)" if $DEBUG;
 
     unless ($dont_remember) {
