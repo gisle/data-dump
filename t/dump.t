@@ -1,4 +1,4 @@
-print "1..12\n";
+print "1..14\n";
 
 use Data::Dump qw(dump);
 
@@ -38,3 +38,11 @@ print "ok 11\n";
 $a = [1..5];
 print "not " unless dump($a) eq "[1, 2, 3, 4, 5]";
 print "ok 12\n";
+
+$h = { a => 1, b => 2 };
+print "not " unless dump($h) eq "{ a => 1, b => 2 }";
+print "ok 13\n";
+
+$h = { 1 => 1, 2 => 1, 10 => 1 };
+print "not " unless dump($h) eq "{ 1 => 1, 2 => 1, 10 => 1 }";
+print "ok 14\n";

@@ -207,11 +207,25 @@ sub _dump
 	my $kstat_sum = 0;
 	my $kstat_sum2 = 0;
 
-	for my $key (sort keys %$rval) {
+	my @orig_keys = keys %$rval;
+	my $text_keys = 0;
+	for (@orig_keys) {
+	    $text_keys++, last unless $_ eq "0" || /^[-+]?[1-9]\d*(?:.\d+)?\z/;
+	}
+
+	if ($text_keys) {
+	    @orig_keys = sort @orig_keys;
+	}
+	else {
+	    @orig_keys = sort { $a <=> $b } @orig_keys;
+	}
+
+	for my $key (@orig_keys) {
 	    my $val = \$rval->{$key};
-	    $key = quote($key) if $key !~ /^[a-zA-Z_]\w*\z/ ||
-		                  length($key) > 20        ||
-		                  $is_perl_keyword{$key};
+	    $key = quote($key) if $is_perl_keyword{$key} ||
+		                  !($key =~ /^[a-zA-Z_]\w{0,19}\z/ ||
+				    $key =~ /^-?[1-9]\d{0,8}\z/
+				    );
 
 	    $kstat_max = length($key) if length($key) > $kstat_max;
 	    $kstat_sum += length($key);
