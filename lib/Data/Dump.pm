@@ -11,7 +11,9 @@ $VERSION = "1.02";  # $Date$
 $DEBUG = 0;
 
 use overload ();
-use vars qw(%seen %refcnt @dump @fixup %require);
+use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64);
+
+$TRY_BASE64 = 50 unless defined $TRY_BASE64;
 
 my %is_perl_keyword = map { $_ => 1 }
 qw( __FILE__ __LINE__ __PACKAGE__ __DATA__ __END__ AUTOLOAD BEGIN CORE
@@ -404,17 +406,19 @@ sub quote {
 #         $str =~ s/([^\040-\176])/sprintf "\\x{%04x}", ord($1)/ge;
       }
   } else {
-      s/([\0-\037\177-\377])/sprintf('\\%03o',ord($1))/eg;
+      s/([\0-\037\177-\377])/sprintf('\\x%02X',ord($1))/eg;
+      s/([^\0-\176])/sprintf('\\x{%X}',ord($1))/eg;
   }
 
-  if (length($_) > 40  && length($_) > (length($_[0]) * 2)) {
-      # too much binary data, better to represent as a hex string?
+  if (length($_) > 40  && !/\\x\{/ && length($_) > (length($_[0]) * 2)) {
+      # too much binary data, better to represent as a hex/base64 string
 
       # Base64 is more compact than hex when string is longer than
       # 17 bytes (not counting any require statement needed).
       # But on the other hand, hex is much more readable.
-      if (length($_[0]) > 50 && eval { require MIME::Base64 }) {
-	  # XXX Perhaps we should just use unpack("u",...) instead.
+      if ($TRY_BASE64 && length($_[0]) > $TRY_BASE64 &&
+	  eval { require MIME::Base64 })
+      {
 	  $require{"MIME::Base64"}++;
 	  return "MIME::Base64::decode(\"" .
 	             MIME::Base64::encode($_[0],"") .
@@ -478,7 +482,7 @@ L<Data::Dumper>, L<Storable>
 The C<Data::Dump> module is written by Gisle Aas <gisle@aas.no>, based
 on C<Data::Dumper> by Gurusamy Sarathy <gsar@umich.edu>.
 
- Copyright 1998-2000,2003 Gisle Aas.
+ Copyright 1998-2000,2003-2004 Gisle Aas.
  Copyright 1996-1998 Gurusamy Sarathy.
 
 This library is free software; you can redistribute it and/or
