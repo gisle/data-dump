@@ -4,3 +4,6 @@ MANIFEST
 Makefile.PL
 README
 t/dump.t
+t/eval.t
+t/scalar-obj.t
+t/scalar.t
