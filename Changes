@@ -1,3 +1,12 @@
+2004-11-05  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.04
+
+   Try to not be confused when dumping tied hashes or arrays.
+   <https://rt.cpan.org/Ticket/Display.html?id=6604>.
+
+
+
 2004-04-13  Gisle Aas <gisle@ActiveState.com>
 
    Release 1.03
