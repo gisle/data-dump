@@ -1,7 +1,3 @@
-BEWARE!! The is only an alpha release of experimental code.  You
-should be prepared that the interface will change or that the module
-will simply go away in the future.
-
 This package contain the Data::Dump module.  It is a simplification of
 Sarathy's Data::Dumper.  I made it to demonstrate for Sarathy how I
 would like Data::Dumper to work, and found it useful myself.  Sarathy
@@ -21,7 +17,7 @@ set any variables. It only returns what is needed to produce a copy of
 the arguments passed in. It means that `dump("foo")' simply returns
 `"foo"', and `dump(1..5)' simply returns `(1, 2, 3, 4, 5)'.
 
-Copyright 1998-1999 Gisle Aas.
+Copyright 1998-1999,2003 Gisle Aas.
 Copyright 1996-1998 Gurusamy Sarathy.
 
 This library is free software; you can redistribute it and/or modify

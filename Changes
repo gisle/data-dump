@@ -1,3 +1,14 @@
+2003-10-06  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.00
+
+   Support dumping of Regexp objects.
+
+   If all the keys of a hash looks numeric sort them accordingly.
+
+   Don't quote plain normalized integer keys.
+
+
 2000-09-11  Gisle Aas <gisle@ActiveState.com>
 
    Release 0.04
