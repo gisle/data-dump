@@ -53,8 +53,8 @@ sub dump
     my $name = "a";
     my @dump;
 
-    for (@_) {
-	my $val = _dump($_, $name, []);
+    for my $v (@_) {
+	my $val = _dump($v, $name, [], tied($v));
 	push(@dump, [$name, $val]);
     } continue {
 	$name++;
@@ -82,7 +82,7 @@ sub dump
 
     my $paren = (@dump != 1);
     $out .= "(" if $paren;
-    $out .= format_list($paren,
+    $out .= format_list($paren, undef,
 			map {defined($_->[1]) ? $_->[1] : "\$".$_->[0]}
 			    @dump
 		       );
@@ -109,7 +109,7 @@ sub _dump
     my $rval = $ref ? $_[0] : \$_[0];
     shift;
 
-    my($name, $idx) = @_;
+    my($name, $idx, $dont_remember) = @_;
 
     my($class, $type, $id);
     if (overload::StrVal($rval) =~ /^(?:([^=]+)=)?([A-Z]+)\(0x([^\)]+)\)$/) {
@@ -119,20 +119,22 @@ sub _dump
     } else {
 	die "Can't parse " . overload::StrVal($rval);
     }
-    warn "$name-(@$idx) $class $type $id ($ref)" if $DEBUG;
+    warn "\$$name(@$idx) $class $type $id ($ref)" if $DEBUG;
 
-    if (my $s = $seen{$id}) {
-	my($sname, $sidx) = @$s;
-	$refcnt{$sname}++;
-	my $sref = fullname($sname, $sidx,
-			    ($ref && $type eq "SCALAR"));
-	warn "SEEN: [$name/@$idx] => [$sname/@$sidx] ($ref,$sref)" if $DEBUG;
-	return $sref unless $sname eq $name;
-	$refcnt{$name}++;
-	push(@fixup, fullname($name,$idx)." = $sref");
-	return "'fix'";
+    unless ($dont_remember) {
+	if (my $s = $seen{$id}) {
+	    my($sname, $sidx) = @$s;
+	    $refcnt{$sname}++;
+	    my $sref = fullname($sname, $sidx,
+				($ref && $type eq "SCALAR"));
+	    warn "SEEN: [$name/@$idx] => [$sname/@$sidx] ($ref,$sref)" if $DEBUG;
+	    return $sref unless $sname eq $name;
+	    $refcnt{$name}++;
+	    push(@fixup, fullname($name,$idx)." = $sref");
+	    return "'fix'";
+	}
+	$seen{$id} = [$name, $idx];
     }
-    $seen{$id} = [$name, $idx];
 
     my $out;
     if ($type eq "SCALAR" || $type eq "REF") {
@@ -225,15 +227,17 @@ sub _dump
     }
     elsif ($type eq "ARRAY") {
 	my @vals;
+	my $tied = tied_str(tied(%$rval));
 	my $i = 0;
-	for (@$rval) {
-	    push(@vals, _dump($_, $name, [@$idx, "[$i]"]));
+	for my $v (@$rval) {
+	    push(@vals, _dump($v, $name, [@$idx, "[$i]"], $tied));
 	    $i++;
 	}
-	$out = "[" . format_list(1, @vals) . "]";
+	$out = "[" . format_list(1, $tied, @vals) . "]";
     }
     elsif ($type eq "HASH") {
 	my(@keys, @vals);
+	my $tied = tied_str(tied(%$rval));
 
 	# statistics to determine variation in key lengths
 	my $kstat_max = 0;
@@ -265,12 +269,12 @@ sub _dump
 	    $kstat_sum2 += length($key)*length($key);
 
 	    push(@keys, $key);
-	    push(@vals, _dump($$val, $name, [@$idx, "{$key}"]));
+	    push(@vals, _dump($$val, $name, [@$idx, "{$key}"], $tied));
 	}
 	my $nl = "";
 	my $klen_pad = 0;
 	my $tmp = "@keys @vals";
-	if (length($tmp) > 60 || $tmp =~ /\n/) {
+	if (length($tmp) > 60 || $tmp =~ /\n/ || $tied) {
 	    $nl = "\n";
 
 	    # Determine what padding to add
@@ -295,6 +299,7 @@ sub _dump
 	    }
 	}
 	$out = "{$nl";
+	$out .= "  # $tied$nl" if $tied;
 	while (@keys) {
 	    my $key = shift @keys;
 	    my $val = shift @vals;
@@ -318,6 +323,19 @@ sub _dump
 	$out = "bless($out, " . quote($class) . ")";
     }
     return $out;
+}
+
+sub tied_str {
+    my $tied = shift;
+    if ($tied) {
+	if (my $tied_ref = ref($tied)) {
+	    $tied = "tied $tied_ref";
+	}
+	else {
+	    $tied = "tied";
+	}
+    }
+    return $tied;
 }
 
 sub fullname
@@ -355,12 +373,14 @@ sub fullname
 sub format_list
 {
     my $paren = shift;
+    my $comment = shift;
     my $indent_lim = $paren ? 0 : 1;
     my $tmp = "@_";
-    if (@_ > $indent_lim && (length($tmp) > 60 || $tmp =~ /\n/)) {
+    if ($comment || (@_ > $indent_lim && (length($tmp) > 60 || $tmp =~ /\n/))) {
 	my @elem = @_;
 	for (@elem) { s/^/  /gm; }   # indent
-	return "\n" . join(",\n", @elem, "");
+	return "\n" . ($comment ? "  # $comment\n" : "") .
+               join(",\n", @elem, "");
     } else {
 	return join(", ", @_) 
     }
