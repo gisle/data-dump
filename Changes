@@ -1,0 +1,14 @@
+1999-05-27  Gisle Aas <gisle@aas.no>
+
+   Release 0.02
+
+   Don't die on data that we can't handle, like LVALUES.
+   We now produce a warning and return it as a '#LVALUE#' string.
+
+   Added parenthesis around bless argument.
+
+   
+
+1998-11-21  Gisle Aas <gisle@aas.no>
+
+   First revision; 0.01
