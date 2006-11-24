@@ -11,14 +11,15 @@ ok(dump(*STDIN), "*main::STDIN");
 ok(dump(\*STDIN), "\\*main::STDIN");
 ok(dump(gensym()), "do {\n  require Symbol;\n  Symbol::gensym();\n}");
 
-${*foo}[1] = 1;
+$a = [];
+${*foo}[1] = $a;
 ${*foo}{bar} = 2;
-ok(dump(\*foo) . "\n", <<'EOT');
+ok(dump(\*foo, $a) . "\n", <<'EOT');
 do {
   my $a = \*main::foo;
-  *{$a} = [undef, 1];
+  *{$a} = [undef, []];
   *{$a} = { bar => 2 };
-  $a;
+  ($a, *{$a}{ARRAY}[1]);
 }
 EOT
 
