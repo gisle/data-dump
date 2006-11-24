@@ -2,7 +2,7 @@
 
 use strict;
 use Test qw(plan ok);
-plan tests => 17;
+plan tests => 21;
 
 use Data::Dump qw(dump);
 
@@ -35,6 +35,19 @@ ok(dump({ a => 1, aa => 2, aaaaaaaaaaaaaa => join("", "a" .. "z", "a" .. "z")}) 
   aaaaaaaaaaaaaa => "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
 }
 EOT
+
+ok(dump(bless {}, "foo"), "bless({}, \"foo\")");
+ok(dump(bless [], "foo"), "bless([], \"foo\")");
+my $sv = [];
+ok(dump(bless \$sv, "foo"), "bless(do{\\(my \$o = [])}, \"foo\")");
+ok(dump(bless { a => 1, aa => "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", aaa => \$sv}, "foo") . "\n", <<'EOT');
+bless({
+  a   => 1,
+  aa  => "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+  aaa => bless(do{\(my $o = [])}, "foo"),
+}, "foo")
+EOT
+
 
 # stranger stuff
 ok(dump({ a => \&Data::Dump::dump, aa => do {require Symbol; Symbol::gensym()}}),
