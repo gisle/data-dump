@@ -2,7 +2,7 @@
 
 use strict;
 use Test qw(plan ok);
-plan tests => 14;
+plan tests => 17;
 
 use Data::Dump qw(dump);
 
@@ -20,3 +20,22 @@ ok(dump(1..5), "(1, 2, 3, 4, 5)");
 ok(dump([1..5]), "[1, 2, 3, 4, 5]");
 ok(dump({ a => 1, b => 2 }), "{ a => 1, b => 2 }");
 ok(dump({ 1 => 1, 2 => 1, 10 => 1 }), "{ 1 => 1, 2 => 1, 10 => 1 }");
+ok(dump({ a => 1, aa => 2, aaa => join("", "a" .. "z", "a" .. "z")}) . "\n", <<EOT);
+{
+  a   => 1,
+  aa  => 2,
+  aaa => "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+}
+EOT
+
+ok(dump({ a => 1, aa => 2, aaaaaaaaaaaaaa => join("", "a" .. "z", "a" .. "z")}) . "\n", <<EOT);
+{
+  a => 1,
+  aa => 2,
+  aaaaaaaaaaaaaa => "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+}
+EOT
+
+# stranger stuff
+ok(dump({ a => \&Data::Dump::dump, aa => do {require Symbol; Symbol::gensym()}}),
+   "do {\n  require Symbol;\n  { a => sub { \"???\" }, aa => Symbol::gensym() };\n}");
