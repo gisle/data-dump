@@ -415,24 +415,13 @@ sub quote {
   s/([\\\"\@\$])/\\$1/g;
   return qq("$_") unless /[^\040-\176]/;  # fast exit
 
-  my $high = $_[1];
   s/([\a\b\t\n\f\r\e])/$esc{$1}/g;
 
   # no need for 3 digits in escape for these
   s/([\0-\037])(?!\d)/sprintf('\\%o',ord($1))/eg;
 
-  if ($high) {
-      s/([\0-\037\177])/sprintf('\\%03o',ord($1))/eg;
-      if ($high eq "iso8859") {
-          s/[\200-\240]/sprintf('\\%o',ord($1))/eg;
-      } elsif ($high eq "utf8") {
-#         use utf8;
-#         $str =~ s/([^\040-\176])/sprintf "\\x{%04x}", ord($1)/ge;
-      }
-  } else {
-      s/([\0-\037\177-\377])/sprintf('\\x%02X',ord($1))/eg;
-      s/([^\040-\176])/sprintf('\\x{%X}',ord($1))/eg;
-  }
+  s/([\0-\037\177-\377])/sprintf('\\x%02X',ord($1))/eg;
+  s/([^\040-\176])/sprintf('\\x{%X}',ord($1))/eg;
 
   if (length($_) > 40  && !/\\x\{/ && length($_) > (length($_[0]) * 2)) {
       # too much binary data, better to represent as a hex/base64 string
