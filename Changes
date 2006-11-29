@@ -1,3 +1,22 @@
+2006-11-29  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.08
+
+   By popular demand; don't put underscore into dumped integers
+   to group thousands.
+
+
+
+2006-11-24  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.07
+
+   Remove unused code.
+
+   Add some more tests.
+
+
+
 2004-11-12  Gisle Aas <gisle@ActiveState.com>
 
    Release 1.06

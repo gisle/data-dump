@@ -7,7 +7,7 @@ require Exporter;
 *import = \&Exporter::import;
 @EXPORT_OK=qw(dump pp);
 
-$VERSION = "1.07";  # $Date$
+$VERSION = "1.08";  # $Date$
 $DEBUG = 0;
 
 use overload ();
@@ -181,15 +181,8 @@ sub _dump
 	    if (!defined $$rval) {
 		$out = "undef";
 	    }
-	    elsif ($$rval =~ /^-?[1-9]\d{0,8}$/ || $$rval eq "0") {
-		if (length $$rval > 4) {
-		    # Separate thousands by _ to make it more readable
-		    $out = reverse $$rval;
-		    $out =~ s/(\d\d\d)(?=\d)/$1_/g;
-		    $out = reverse $out;
-		} else {
-		    $out = $$rval;
-		}
+	    elsif ($$rval =~ /^-?[1-9]\d{0,9}$/ || $$rval eq "0") {
+		$out = $$rval;
 	    }
 	    else {
 		$out = quote($$rval);
