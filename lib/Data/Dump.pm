@@ -535,7 +535,7 @@ semicolon in the expected place:
 
 If dump() is called in void context, then the dump is printed on
 STDERR and then "\n" terminated.  You might find this useful for quick
-debug printouts, but the dd*() functions might be a better alternative
+debug printouts, but the dd*() functions might be better alternatives
 for this.
 
 There is no difference between dump() and pp(), except that dump()
