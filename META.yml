@@ -1,0 +1,11 @@
+--- #YAML:1.0
+name:                Data-Dump
+version:             1.10
+abstract:            ~
+license:             ~
+generated_by:        ExtUtils::MakeMaker version 6.3201
+distribution_type:   module
+requires:     
+meta-spec:
+    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
+    version: 1.2

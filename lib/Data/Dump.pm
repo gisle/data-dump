@@ -1,13 +1,15 @@
 package Data::Dump;
 
 use strict;
-use vars qw(@EXPORT_OK $VERSION $DEBUG);
+use vars qw(@EXPORT @EXPORT_OK $VERSION $DEBUG);
+use subs qq(dump);
 
 require Exporter;
 *import = \&Exporter::import;
-@EXPORT_OK=qw(dump pp);
+@EXPORT = qw(dd ddx);
+@EXPORT_OK = qw(dump pp quote);
 
-$VERSION = "1.08";  # $Date: 2006/11/29 10:47:17 $
+$VERSION = "1.10";
 $DEBUG = 0;
 
 use overload ();
@@ -103,6 +105,18 @@ sub dump
 
 *pp = \&dump;
 
+sub dd {
+    print dump(@_), "\n";
+}
+
+sub ddx {
+    my(undef, $file, $line) = caller;
+    $file =~ s,.*[\\/],,;
+    my $out = "$file:$line: " . dump(@_) . "\n";
+    $out =~ s/^/# /gm;
+    print $out;
+}
+
 sub _dump
 {
     my $ref  = ref $_[0];
@@ -141,7 +155,7 @@ sub _dump
     }
 
     my $out;
-    if ($type eq "SCALAR" || $type eq "REF") {
+    if ($type eq "SCALAR" || $type eq "REF" || $type eq "REGEXP") {
 	if ($ref) {
 	    if ($class && $class eq "Regexp") {
 		my $v = "$rval";
@@ -185,7 +199,7 @@ sub _dump
 		$out = $$rval;
 	    }
 	    else {
-		$out = quote($$rval);
+		$out = str($$rval);
 	    }
 	    if ($class && !@$idx) {
 		# Top is an object, not a reference to one as perl needs
@@ -383,38 +397,29 @@ sub format_list
     }
 }
 
-my %esc = (
-    "\a" => "\\a",
-    "\b" => "\\b",
-    "\t" => "\\t",
-    "\n" => "\\n",
-    "\f" => "\\f",
-    "\r" => "\\r",
-    "\e" => "\\e",
-);
-
-# put a string value in double quotes
-sub quote {
-  local($_) = $_[0];
-  if (length($_) > 20) {
+sub str {
+  if (length($_[0]) > 20) {
+      for ($_[0]) {
       # Check for repeated string
-      if (/^(.{1,5}?)(\1*)$/s) {
+      if (/^(.)\1\1\1/s) {
+          # seems to be a repating sequence, let's check if it really is
+          # without backtracking
+          unless (/[^\Q$1\E]/) {
+              my $base = quote($1);
+              my $repeat = length;
+              return "($base x $repeat)"
+          }
+      }
+      # Length protection because the RE engine will blow the stack [RT#33520]
+      if (length($_) < 16 * 1024 && /^(.{2,5}?)(\1*)\z/s) {
 	  my $base   = quote($1);
 	  my $repeat = length($2)/length($1) + 1;
 	  return "($base x $repeat)";
       }
+      }
   }
-  # If there are many '"' we might want to use qq() instead
-  s/([\\\"\@\$])/\\$1/g;
-  return qq("$_") unless /[^\040-\176]/;  # fast exit
 
-  s/([\a\b\t\n\f\r\e])/$esc{$1}/g;
-
-  # no need for 3 digits in escape for these
-  s/([\0-\037])(?!\d)/sprintf('\\%o',ord($1))/eg;
-
-  s/([\0-\037\177-\377])/sprintf('\\x%02X',ord($1))/eg;
-  s/([^\040-\176])/sprintf('\\x{%X}',ord($1))/eg;
+  local $_ = &quote;
 
   if (length($_) > 40  && !/\\x\{/ && length($_) > (length($_[0]) * 2)) {
       # too much binary data, better to represent as a hex/base64 string
@@ -433,6 +438,34 @@ sub quote {
       return "pack(\"H*\",\"" . unpack("H*", $_[0]) . "\")";
   }
 
+  return $_;
+}
+
+my %esc = (
+    "\a" => "\\a",
+    "\b" => "\\b",
+    "\t" => "\\t",
+    "\n" => "\\n",
+    "\f" => "\\f",
+    "\r" => "\\r",
+    "\e" => "\\e",
+);
+
+# put a string value in double quotes
+sub quote {
+  local($_) = $_[0];
+  # If there are many '"' we might want to use qq() instead
+  s/([\\\"\@\$])/\\$1/g;
+  return qq("$_") unless /[^\040-\176]/;  # fast exit
+
+  s/([\a\b\t\n\f\r\e])/$esc{$1}/g;
+
+  # no need for 3 digits in escape for these
+  s/([\0-\037])(?!\d)/sprintf('\\%o',ord($1))/eg;
+
+  s/([\0-\037\177-\377])/sprintf('\\x%02X',ord($1))/eg;
+  s/([^\040-\176])/sprintf('\\x{%X}',ord($1))/eg;
+
   return qq("$_");
 }
 
@@ -446,30 +479,108 @@ Data::Dump - Pretty printing of data structures
 
 =head1 SYNOPSIS
 
- use Data::Dump qw(dump);
+ use Data::Dump 'dump ddx';
 
  $str = dump(@list)
  @copy_of_list = eval $str;
 
+ # or use it for easy debug printout
+ ddx localtime;
+
 =head1 DESCRIPTION
 
-This module provides a single function called dump() that takes a list
-of values as its argument and produces a string as its result.  The string
-contains Perl code that, when C<eval>ed, produces a deep copy of the
-original arguments.  The string is formatted for easy reading.
+This module provide functions that takes a list of values as their
+argument and produces a string as its result.  The string contains
+Perl code that, when C<eval>ed, produces a deep copy of the original
+arguments.
+
+The main feature of the module is that it strives to produce output
+that is easy to read.  Example:
+
+    @a = (1, [2, 3], {4 => 5});
+    dump(@a);
+
+Produces:
+
+    (1, [2, 3], { 4 => 5 })
+
+If you dump just a little data, it is output on a single line. If
+you dump data that is more complex or there is a lot of it, line breaks
+are automatically added to keep it easy to read.
+
+The following functions are provided (only the dd* functions are exported by default):
+
+=over
+
+=item dump( ... )
+
+=item pp( ... )
+
+This takes a list of arguments and produce a string containing a Perl
+expression as its result.  If you pass this string to Perl's built-in
+eval() function it should return a copy of the arguments you passed
+to dump().
+
+If you call the function with multiple arguments then the output will
+be wrapped in parenthesis "( ..., ... )".  If you call the function with a
+single argument it will not have these.  If you call the function with
+a single scalar (non-reference) argument it will just return the
+scalar quoted if need, but never break it into multiple lines.  If you
+pass multiple arguments or references to arrays of hashes then the
+return value might be contain line breaks to format it for easier
+reading.  The returned string will never be "\n" terminated, even if
+contains multiple lines.  This allows code like this to place the
+semicolon in the expected place:
+
+   print '$obj = ', dump($obj), ";\n";
 
 If dump() is called in a void context, then the dump is printed on
-STDERR instead of being returned.
+STDERR instead of being returned and then "\n" terminated.  You might
+find this useful for quick debug printouts, but the dd*() functions
+might be a better alternative for this.
 
-If you don't like importing a function that overrides Perl's
-not-so-useful builtin, then you can also import the same function as
-pp(), mnemonic for "pretty-print".
+There is no difference between dump() and pp(), except that dump()
+shares its name with a not-so-useful perl builtin.  Because of this
+some might want to avoid using that name.
+
+=item quote( $string )
+
+Returns a quoted version of the provided string.
+
+It differs from dump($string) in that it will quote even numbers and
+not try to come up with clever expressions that might shorten the
+output.
+
+=item dd( ... )
+
+=item ddx( ... )
+
+These functions will call dump() on on their argument and print the
+result to STDOUT.
+
+The difference between them is only that ddx() will prefix the lines
+it prints with "# " and mark the first line with the file and line
+number where it was called.  This is meant to be useful for debug
+printouts of state within programs.
+
+=back
+
+
+=head1 LIMITATIONS
+
+Code references will be displayed as simply 'sub { "???" }' when
+dumped. Thus, "eval'ing" them will not reproduce the original routine.
+
+If you forget to explicitly import the 'dump' function, your code will
+core dump. That's because you just called the builtin 'dump' function
+by accident, which intentionally dumps core.  Because of this you can
+also import the same function as pp(), mnemonic for "pretty-print".
 
 =head1 HISTORY
 
 The C<Data::Dump> module grew out of frustration with Sarathy's
-in-most-cases-excellent C<Data::Dumper>.  Basic ideas and some code are shared
-with Sarathy's module.
+in-most-cases-excellent C<Data::Dumper>.  Basic ideas and some code
+are shared with Sarathy's module.
 
 The C<Data::Dump> module provides a much simpler interface than
 C<Data::Dumper>.  No OO interface is available and there are no
@@ -488,7 +599,7 @@ L<Data::Dumper>, L<Storable>
 The C<Data::Dump> module is written by Gisle Aas <gisle@aas.no>, based
 on C<Data::Dumper> by Gurusamy Sarathy <gsar@umich.edu>.
 
- Copyright 1998-2000,2003-2004 Gisle Aas.
+ Copyright 1998-2000,2003-2004,2008 Gisle Aas.
  Copyright 1996-1998 Gurusamy Sarathy.
 
 This library is free software; you can redistribute it and/or

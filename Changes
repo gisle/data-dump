@@ -1,3 +1,18 @@
+2008-08-21  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.10
+
+   Add the functions quote(), dd() and ddx().
+
+   Fix segfault when duming large repeated strings [RT#33520]
+
+   Incorporated documentation improvements from Mark Stosberg
+
+   Apply Data-Dump-1.08-ANDK-01.patch from CPAN.  Might do some
+   good on older Perl's I guess.
+
+
+
 2006-11-29  Gisle Aas <gisle@ActiveState.com>
 
    Release 1.08
