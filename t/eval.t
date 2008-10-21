@@ -16,4 +16,3 @@ print "ok 1\n";
 
 print "\n\$h = $dump_h;\n";
 print "\n\$s = $dump_s;\n";
-

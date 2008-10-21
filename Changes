@@ -1,3 +1,88 @@
+2006-11-29  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.08
+
+   By popular demand; don't put underscore into dumped integers
+   to group thousands.
+
+
+
+2006-11-24  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.07
+
+   Remove unused code.
+
+   Add some more tests.
+
+
+
+2004-11-12  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.06
+
+   Compatibility fix for bleadperl by David Dyck <david.dyck@fluke.com>.
+
+
+
+2004-11-11  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.05
+
+   Improved track scalar references; dump() ended up
+   recursing forever on some cyclic structures.
+
+   More tests.
+
+
+
+2004-11-05  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.04
+
+   Try to not be confused when dumping tied hashes or arrays.
+   <https://rt.cpan.org/Ticket/Display.html?id=6604>.
+
+
+
+2004-04-13  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.03
+
+   Dump strings with chars with ord > 255 using \x{...} escapes.
+
+
+
+2003-12-18  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.02
+
+   Documentation fixes by Paul Croome <Paul.Croome@softwareag.com>.
+
+
+
+2003-10-10  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.01
+
+   Improved formatting of Regexp objects.  Put top level modifiers in
+   the normal place and smart selection of separators.
+
+   Perl 5.6 or better required.
+
+
+
+2003-10-06  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.00
+
+   Support dumping of Regexp objects.
+
+   If all the keys of a hash looks numeric sort them accordingly.
+
+   Don't quote plain normalized integer keys.
+
+
 2000-09-11  Gisle Aas <gisle@ActiveState.com>
 
    Release 0.04

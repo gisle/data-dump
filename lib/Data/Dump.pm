@@ -7,11 +7,13 @@ require Exporter;
 *import = \&Exporter::import;
 @EXPORT_OK=qw(dump pp);
 
-$VERSION = "0.04";  # $Date: 2000/09/11 16:02:11 $
+$VERSION = "1.08";  # $Date: 2006/11/29 10:47:17 $
 $DEBUG = 0;
 
 use overload ();
-use vars qw(%seen %refcnt @dump @fixup %require);
+use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64);
+
+$TRY_BASE64 = 50 unless defined $TRY_BASE64;
 
 my %is_perl_keyword = map { $_ => 1 }
 qw( __FILE__ __LINE__ __PACKAGE__ __DATA__ __END__ AUTOLOAD BEGIN CORE
@@ -51,8 +53,8 @@ sub dump
     my $name = "a";
     my @dump;
 
-    for (@_) {
-	my $val = _dump($_, $name, []);
+    for my $v (@_) {
+	my $val = _dump($v, $name, [], tied($v));
 	push(@dump, [$name, $val]);
     } continue {
 	$name++;
@@ -80,7 +82,7 @@ sub dump
 
     my $paren = (@dump != 1);
     $out .= "(" if $paren;
-    $out .= format_list($paren,
+    $out .= format_list($paren, undef,
 			map {defined($_->[1]) ? $_->[1] : "\$".$_->[0]}
 			    @dump
 		       );
@@ -107,7 +109,7 @@ sub _dump
     my $rval = $ref ? $_[0] : \$_[0];
     shift;
 
-    my($name, $idx) = @_;
+    my($name, $idx, $dont_remember) = @_;
 
     my($class, $type, $id);
     if (overload::StrVal($rval) =~ /^(?:([^=]+)=)?([A-Z]+)\(0x([^\)]+)\)$/) {
@@ -117,40 +119,70 @@ sub _dump
     } else {
 	die "Can't parse " . overload::StrVal($rval);
     }
-    warn "$name-(@$idx) $class $type $id ($ref)" if $DEBUG;
-
-    if (my $s = $seen{$id}) {
-	my($sname, $sidx) = @$s;
-	$refcnt{$sname}++;
-	my $sref = fullname($sname, $sidx,
-			    ($ref && $type eq "SCALAR"));
-	warn "SEEN: [$name/@$idx] => [$sname/@$sidx] ($ref,$sref)" if $DEBUG;
-	return $sref unless $sname eq $name;
-	$refcnt{$name}++;
-	push(@fixup, fullname($name,$idx)." = $sref");
-	return "'fix'";
+    if ($] < 5.008 && $type eq "SCALAR") {
+	$type = "REF" if $ref eq "REF";
     }
-    $seen{$id} = [$name, $idx];
+    warn "\$$name(@$idx) $class $type $id ($ref)" if $DEBUG;
+
+    unless ($dont_remember) {
+	if (my $s = $seen{$id}) {
+	    my($sname, $sidx) = @$s;
+	    $refcnt{$sname}++;
+	    my $sref = fullname($sname, $sidx,
+				($ref && $type eq "SCALAR"));
+	    warn "SEEN: [\$$name(@$idx)] => [\$$sname(@$sidx)] ($ref,$sref)" if $DEBUG;
+	    return $sref unless $sname eq $name;
+	    $refcnt{$name}++;
+	    push(@fixup, fullname($name,$idx)." = $sref");
+	    return "do{my \$fix}" if @$idx && $idx->[-1] eq '$';
+	    return "'fix'";
+	}
+	$seen{$id} = [$name, $idx];
+    }
 
     my $out;
     if ($type eq "SCALAR" || $type eq "REF") {
 	if ($ref) {
-	    delete $seen{$id};  # will be seen again shortly
-	    my $val = _dump($$rval, $name, [@$idx, "\$"]);
-	    $out = $class ? "do{\\(my \$o = $val)}" : "\\$val";
+	    if ($class && $class eq "Regexp") {
+		my $v = "$rval";
+
+		my $mod = "";
+		if ($v =~ /^\(\?([msix-]+):([\x00-\xFF]*)\)\z/) {
+		    $mod = $1;
+		    $v = $2;
+		    $mod =~ s/-.*//;
+		}
+
+		my $sep = '/';
+		my $sep_count = ($v =~ tr/\///);
+		if ($sep_count) {
+		    # see if we can find a better one
+		    for ('|', ',', ':', '#') {
+			my $c = eval "\$v =~ tr/\Q$_\E//";
+			#print "SEP $_ $c $sep_count\n";
+			if ($c < $sep_count) {
+			    $sep = $_;
+			    $sep_count = $c;
+			    last if $sep_count == 0;
+			}
+		    }
+		}
+		$v =~ s/\Q$sep\E/\\$sep/g;
+
+		$out = "qr$sep$v$sep$mod";
+		undef($class);
+	    }
+	    else {
+		delete $seen{$id} if $type eq "SCALAR";  # will be seen again shortly
+		my $val = _dump($$rval, $name, [@$idx, "\$"]);
+		$out = $class ? "do{\\(my \$o = $val)}" : "\\$val";
+	    }
 	} else {
 	    if (!defined $$rval) {
 		$out = "undef";
 	    }
-	    elsif ($$rval =~ /^-?[1-9]\d{0,8}$/ || $$rval eq "0") {
-		if (length $$rval > 4) {
-		    # Separate thousands by _ to make it more readable
-		    $out = reverse $$rval;
-		    $out =~ s/(\d\d\d)(?=\d)/$1_/g;
-		    $out = reverse $out;
-		} else {
-		    $out = $$rval;
-		}
+	    elsif ($$rval =~ /^-?[1-9]\d{0,9}$/ || $$rval eq "0") {
+		$out = $$rval;
 	    }
 	    else {
 		$out = quote($$rval);
@@ -192,38 +224,54 @@ sub _dump
     }
     elsif ($type eq "ARRAY") {
 	my @vals;
+	my $tied = tied_str(tied(@$rval));
 	my $i = 0;
-	for (@$rval) {
-	    push(@vals, _dump($_, $name, [@$idx, "[$i]"]));
+	for my $v (@$rval) {
+	    push(@vals, _dump($v, $name, [@$idx, "[$i]"], $tied));
 	    $i++;
 	}
-	$out = "[" . format_list(1, @vals) . "]";
+	$out = "[" . format_list(1, $tied, @vals) . "]";
     }
     elsif ($type eq "HASH") {
 	my(@keys, @vals);
+	my $tied = tied_str(tied(%$rval));
 
 	# statistics to determine variation in key lengths
 	my $kstat_max = 0;
 	my $kstat_sum = 0;
 	my $kstat_sum2 = 0;
 
-	for my $key (sort keys %$rval) {
+	my @orig_keys = keys %$rval;
+	my $text_keys = 0;
+	for (@orig_keys) {
+	    $text_keys++, last unless $_ eq "0" || /^[-+]?[1-9]\d*(?:.\d+)?\z/;
+	}
+
+	if ($text_keys) {
+	    @orig_keys = sort @orig_keys;
+	}
+	else {
+	    @orig_keys = sort { $a <=> $b } @orig_keys;
+	}
+
+	for my $key (@orig_keys) {
 	    my $val = \$rval->{$key};
-	    $key = quote($key) if $key !~ /^[a-zA-Z_]\w*\z/ ||
-		                  length($key) > 20        ||
-		                  $is_perl_keyword{$key};
+	    $key = quote($key) if $is_perl_keyword{$key} ||
+		                  !($key =~ /^[a-zA-Z_]\w{0,19}\z/ ||
+				    $key =~ /^-?[1-9]\d{0,8}\z/
+				    );
 
 	    $kstat_max = length($key) if length($key) > $kstat_max;
 	    $kstat_sum += length($key);
 	    $kstat_sum2 += length($key)*length($key);
 
 	    push(@keys, $key);
-	    push(@vals, _dump($$val, $name, [@$idx, "{$key}"]));
+	    push(@vals, _dump($$val, $name, [@$idx, "{$key}"], $tied));
 	}
 	my $nl = "";
 	my $klen_pad = 0;
 	my $tmp = "@keys @vals";
-	if (length($tmp) > 60 || $tmp =~ /\n/) {
+	if (length($tmp) > 60 || $tmp =~ /\n/ || $tied) {
 	    $nl = "\n";
 
 	    # Determine what padding to add
@@ -248,6 +296,7 @@ sub _dump
 	    }
 	}
 	$out = "{$nl";
+	$out .= "  # $tied$nl" if $tied;
 	while (@keys) {
 	    my $key = shift @keys;
 	    my $val = shift @vals;
@@ -271,6 +320,19 @@ sub _dump
 	$out = "bless($out, " . quote($class) . ")";
     }
     return $out;
+}
+
+sub tied_str {
+    my $tied = shift;
+    if ($tied) {
+	if (my $tied_ref = ref($tied)) {
+	    $tied = "tied $tied_ref";
+	}
+	else {
+	    $tied = "tied";
+	}
+    }
+    return $tied;
 }
 
 sub fullname
@@ -308,14 +370,16 @@ sub fullname
 sub format_list
 {
     my $paren = shift;
+    my $comment = shift;
     my $indent_lim = $paren ? 0 : 1;
     my $tmp = "@_";
-    if (@_ > $indent_lim && (length($tmp) > 60 || $tmp =~ /\n/)) {
+    if ($comment || (@_ > $indent_lim && (length($tmp) > 60 || $tmp =~ /\n/))) {
 	my @elem = @_;
 	for (@elem) { s/^/  /gm; }   # indent
-	return "\n" . join(",\n", @elem, "");
+	return "\n" . ($comment ? "  # $comment\n" : "") .
+               join(",\n", @elem, "");
     } else {
-	return join(", ", @_) 
+	return join(", ", @_);
     }
 }
 
@@ -344,32 +408,23 @@ sub quote {
   s/([\\\"\@\$])/\\$1/g;
   return qq("$_") unless /[^\040-\176]/;  # fast exit
 
-  my $high = $_[1];
   s/([\a\b\t\n\f\r\e])/$esc{$1}/g;
 
   # no need for 3 digits in escape for these
-  s/([\0-\037])(?!\d)/'\\'.sprintf('%o',ord($1))/eg;
+  s/([\0-\037])(?!\d)/sprintf('\\%o',ord($1))/eg;
 
-  if ($high) {
-      s/([\0-\037\177])/'\\'.sprintf('%03o',ord($1))/eg;
-      if ($high eq "iso8859") {
-          s/[\200-\240]/'\\'.sprintf('%o',ord($1))/eg;
-      } elsif ($high eq "utf8") {
-#         use utf8;
-#         $str =~ s/([^\040-\176])/sprintf "\\x{%04x}", ord($1)/ge;
-      }
-  } else {
-      s/([\0-\037\177-\377])/'\\'.sprintf('%03o',ord($1))/eg;
-  }
+  s/([\0-\037\177-\377])/sprintf('\\x%02X',ord($1))/eg;
+  s/([^\040-\176])/sprintf('\\x{%X}',ord($1))/eg;
 
-  if (length($_) > 40  && length($_) > (length($_[0]) * 2)) {
-      # too much binary data, better to represent as a hex string?
+  if (length($_) > 40  && !/\\x\{/ && length($_) > (length($_[0]) * 2)) {
+      # too much binary data, better to represent as a hex/base64 string
 
       # Base64 is more compact than hex when string is longer than
       # 17 bytes (not counting any require statement needed).
       # But on the other hand, hex is much more readable.
-      if (length($_[0]) > 50 && eval { require MIME::Base64 }) {
-	  # XXX Perhaps we should just use unpack("u",...) instead.
+      if ($TRY_BASE64 && length($_[0]) > $TRY_BASE64 &&
+	  eval { require MIME::Base64 })
+      {
 	  $require{"MIME::Base64"}++;
 	  return "MIME::Base64::decode(\"" .
 	             MIME::Base64::encode($_[0],"") .
@@ -398,29 +453,29 @@ Data::Dump - Pretty printing of data structures
 
 =head1 DESCRIPTION
 
-This module provide a single function called dump() that takes a list
-of values as argument and produce a string as result.  The string
-contains perl code that when C<eval>ed will produce a deep copy of the
+This module provides a single function called dump() that takes a list
+of values as its argument and produces a string as its result.  The string
+contains Perl code that, when C<eval>ed, produces a deep copy of the
 original arguments.  The string is formatted for easy reading.
 
-If dump() is called in void context, then the dump will be printed on
+If dump() is called in a void context, then the dump is printed on
 STDERR instead of being returned.
 
-If you don't like to import a function that overrides Perl's
+If you don't like importing a function that overrides Perl's
 not-so-useful builtin, then you can also import the same function as
 pp(), mnemonic for "pretty-print".
 
 =head1 HISTORY
 
 The C<Data::Dump> module grew out of frustration with Sarathy's
-in-most-cases-excellent C<Data::Dumper>.  Basic ideas and some code is shared
+in-most-cases-excellent C<Data::Dumper>.  Basic ideas and some code are shared
 with Sarathy's module.
 
-The C<Data::Dump> module provide a much simpler interface than
+The C<Data::Dump> module provides a much simpler interface than
 C<Data::Dumper>.  No OO interface is available and there are no
 configuration options to worry about (yet :-).  The other benefit is
 that the dump produced does not try to set any variables.  It only
-returns what is needed to produce a copy of the arguments.  It means
+returns what is needed to produce a copy of the arguments.  This means
 that C<dump("foo")> simply returns C<"foo">, and C<dump(1..5)> simply
 returns C<(1, 2, 3, 4, 5)>.
 
@@ -433,7 +488,7 @@ L<Data::Dumper>, L<Storable>
 The C<Data::Dump> module is written by Gisle Aas <gisle@aas.no>, based
 on C<Data::Dumper> by Gurusamy Sarathy <gsar@umich.edu>.
 
- Copyright 1998-2000 Gisle Aas.
+ Copyright 1998-2000,2003-2004 Gisle Aas.
  Copyright 1996-1998 Gurusamy Sarathy.
 
 This library is free software; you can redistribute it and/or

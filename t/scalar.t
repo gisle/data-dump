@@ -34,5 +34,3 @@ print "not " unless $d eq q(do {
   ($a, $$a);
 });
 print "ok 3\n";
-
-
