@@ -9,7 +9,7 @@ require Exporter;
 @EXPORT = qw(dd ddx);
 @EXPORT_OK = qw(dump pp quote);
 
-$VERSION = "1.10";
+$VERSION = "1.11";
 $DEBUG = 0;
 
 use overload ();
@@ -411,9 +411,9 @@ sub str {
           }
       }
       # Length protection because the RE engine will blow the stack [RT#33520]
-      if (length($_) < 16 * 1024 && /^(.{2,5}?)(\1*)\z/s) {
+      if (length($_) < 16 * 1024 && /^(.{2,5}?)\1*\z/s) {
 	  my $base   = quote($1);
-	  my $repeat = length($2)/length($1) + 1;
+	  my $repeat = length($_)/length($1);
 	  return "($base x $repeat)";
       }
       }
@@ -479,9 +479,9 @@ Data::Dump - Pretty printing of data structures
 
 =head1 SYNOPSIS
 
- use Data::Dump 'dump ddx';
+ use Data::Dump qw(dump ddx);
 
- $str = dump(@list)
+ $str = dump(@list);
  @copy_of_list = eval $str;
 
  # or use it for easy debug printout
@@ -516,28 +516,27 @@ The following functions are provided (only the dd* functions are exported by def
 
 =item pp( ... )
 
-This takes a list of arguments and produce a string containing a Perl
-expression as its result.  If you pass this string to Perl's built-in
-eval() function it should return a copy of the arguments you passed
-to dump().
+Returns a string containing a Perl expression.  If you pass this
+string to Perl's built-in eval() function it should return a copy of
+the arguments you passed to dump().
 
 If you call the function with multiple arguments then the output will
 be wrapped in parenthesis "( ..., ... )".  If you call the function with a
-single argument it will not have these.  If you call the function with
+single argument the output will not have the wrapping.  If you call the function with
 a single scalar (non-reference) argument it will just return the
-scalar quoted if need, but never break it into multiple lines.  If you
+scalar quoted if needed, but never break it into multiple lines.  If you
 pass multiple arguments or references to arrays of hashes then the
-return value might be contain line breaks to format it for easier
+return value might contain line breaks to format it for easier
 reading.  The returned string will never be "\n" terminated, even if
 contains multiple lines.  This allows code like this to place the
 semicolon in the expected place:
 
    print '$obj = ', dump($obj), ";\n";
 
-If dump() is called in a void context, then the dump is printed on
-STDERR instead of being returned and then "\n" terminated.  You might
-find this useful for quick debug printouts, but the dd*() functions
-might be a better alternative for this.
+If dump() is called in void context, then the dump is printed on
+STDERR and then "\n" terminated.  You might find this useful for quick
+debug printouts, but the dd*() functions might be a better alternative
+for this.
 
 There is no difference between dump() and pp(), except that dump()
 shares its name with a not-so-useful perl builtin.  Because of this
@@ -547,7 +546,7 @@ some might want to avoid using that name.
 
 Returns a quoted version of the provided string.
 
-It differs from dump($string) in that it will quote even numbers and
+It differs from C<dump($string)> in that it will quote even numbers and
 not try to come up with clever expressions that might shorten the
 output.
 
@@ -556,7 +555,8 @@ output.
 =item ddx( ... )
 
 These functions will call dump() on on their argument and print the
-result to STDOUT.
+result to STDOUT (actually, it's the currently selected output handle, but
+STDOUT is the default for that).
 
 The difference between them is only that ddx() will prefix the lines
 it prints with "# " and mark the first line with the file and line
@@ -569,12 +569,12 @@ printouts of state within programs.
 =head1 LIMITATIONS
 
 Code references will be displayed as simply 'sub { "???" }' when
-dumped. Thus, "eval'ing" them will not reproduce the original routine.
+dumped. Thus, C<eval>ing them will not reproduce the original routine.
 
-If you forget to explicitly import the 'dump' function, your code will
-core dump. That's because you just called the builtin 'dump' function
+If you forget to explicitly import the C<dump> function, your code will
+core dump. That's because you just called the builtin C<dump> function
 by accident, which intentionally dumps core.  Because of this you can
-also import the same function as pp(), mnemonic for "pretty-print".
+also import the same function as C<pp>, mnemonic for "pretty-print".
 
 =head1 HISTORY
 

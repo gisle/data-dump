@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Data-Dump
-version:             1.10
+version:             1.11
 abstract:            ~
 license:             ~
 generated_by:        ExtUtils::MakeMaker version 6.3201

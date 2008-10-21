@@ -1,3 +1,11 @@
+2008-08-23  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.11
+
+   Documentation tweaks.
+
+
+
 2008-08-21  Gisle Aas <gisle@ActiveState.com>
 
    Release 1.10
@@ -9,7 +17,7 @@
    Incorporated documentation improvements from Mark Stosberg
 
    Apply Data-Dump-1.08-ANDK-01.patch from CPAN.  Might do some
-   good on older Perl's I guess.
+   good on older perls I guess.
 
 
 

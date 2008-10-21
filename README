@@ -2,9 +2,9 @@ NAME
     Data::Dump - Pretty printing of data structures
 
 SYNOPSIS
-     use Data::Dump 'dump ddx';
+     use Data::Dump qw(dump ddx);
 
-     $str = dump(@list)
+     $str = dump(@list);
      @copy_of_list = eval $str;
 
      # or use it for easy debug printout
