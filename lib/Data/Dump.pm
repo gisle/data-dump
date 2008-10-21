@@ -554,7 +554,7 @@ output.
 
 =item ddx( ... )
 
-These functions will call dump() on on their argument and print the
+These functions will call dump() on their argument and print the
 result to STDOUT (actually, it's the currently selected output handle, but
 STDOUT is the default for that).
 
