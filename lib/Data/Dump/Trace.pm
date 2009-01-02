@@ -136,3 +136,74 @@ sub AUTOLOAD {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Data::Dump::Trace - Helpers to trace function and method calls
+
+=head1 SYNOPSIS
+
+  use Data::Dump::Trace qw(autowrap mcall);
+
+  autowrap("LWP::UserAgent" => "ua", "HTTP::Response" => "res");
+
+  use LWP::UserAgent;
+  $ua = mcall(LWP::UserAgent => "new");      # instead of LWP::UserAgent->new;
+  $ua->get("http://www.example.com")->dump;
+
+=head1 DESCRIPTION
+
+The following functions are provided:
+
+=over
+
+=item autowrap( $class )
+
+=item autowrap( $class => $prefix )
+
+=item autowrap( $class1 => $prefix1,  $class2 => $prefix2, ... )
+
+Register classes whose objects are are automatically wrapped when
+returned by one of the call functions below.  If $prefix is provided
+it will be used as to name the objects.
+
+=item wrap( name => $str, func => \&func )
+
+=item wrap( name => $str, obj => $obj )
+
+Returns a wrapped function or object.  When a wrapped function is
+invoked then a trace is printed as the underlying function is invoked.
+When a method on a wrapped object is invoked then a trace is printed
+as methods on the underlying objects are invoked.
+
+=item call( $name, \&func, $proto, @ARGS )
+
+Calls the given function with the given arguments.  The trace will use
+$name as the name of the function.
+
+The $proto argument is reserved for future extensions.
+
+=item mcall( $class, $method, $proto, @ARGS )
+
+=item mcall( $object, $method, $proto, @ARGS )
+
+Calls the given method with the given arguments.
+
+The $proto argument is reserved for future extensions.
+
+=back
+
+=head1 SEE ALSO
+
+L<Data::Dump>
+
+=head1 AUTHOR
+
+Copyright 2009 Gisle Aas.
+
+This library is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+=cut
