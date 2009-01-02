@@ -9,7 +9,7 @@ require Exporter;
 @EXPORT = qw(dd ddx);
 @EXPORT_OK = qw(dump pp quote);
 
-$VERSION = "1.12";
+$VERSION = "1.13";
 $DEBUG = 0;
 
 use overload ();

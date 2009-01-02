@@ -1,3 +1,11 @@
+2009-01-02  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.13
+
+   Added the Data::Dump::Trace module
+
+
+
 2008-10-21  Gisle Aas <gisle@ActiveState.com>
 
    Release 1.12

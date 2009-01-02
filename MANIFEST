@@ -1,5 +1,6 @@
 Changes
 lib/Data/Dump.pm
+lib/Data/Dump/Trace.pm
 Makefile.PL
 MANIFEST
 README

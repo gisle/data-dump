@@ -1,5 +1,7 @@
 package Data::Dump::Trace;
 
+$VERSION = "0.01";
+
 # Todo:
 #   - prototypes
 #     in/out parameters
