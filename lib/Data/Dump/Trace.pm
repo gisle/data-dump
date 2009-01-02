@@ -13,6 +13,7 @@ $VERSION = "0.01";
 #   - don't dump return values
 #   - configurable colors
 #   - show call depth using indentation
+#   - show nested calls sensibly
 #   - time calls
 
 use strict;
