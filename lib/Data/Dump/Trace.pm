@@ -69,14 +69,10 @@ sub call {
         $func->(@_);
     }
     elsif (wantarray) {
-        my @s = $func->(@_);
-        print " ==> ", CYAN, dumpav(@s), RESET, "\n";
-        return @s;
+        return _ret_list($func->(@_));
     }
     else {
-        my $s = $func->(@_);
-        print " ==> ", CYAN, dump($s), RESET, "\n";
-        return $s;
+        return _ret_scalar($func->(@_));
     }
 }
 
@@ -90,22 +86,29 @@ sub mcall {
         $o->$method(@_);
     }
     elsif (wantarray) {
-        my @s = $o->$method(@_);
-        print " ==> ", CYAN, dumpav(@s), RESET, "\n";
-        return @s;
+        return _ret_list($o->$method(@_));
     }
     else {
-        my $s = $o->$method(@_);
-        if (my $name = $autowrap_class{ref($s)}) {
-            $name .= $name_count{$name} if $name_count{$name}++;
-            print " ==> ", CYAN, $name, RESET, "\n";
-            $s = wrap(name => $name, obj => $s);
-        }
-        else {
-            print " ==> ", CYAN, dump($s), RESET, "\n";
-        }
-        return $s;
+        return _ret_scalar($o->$method(@_));
     }
+}
+
+sub _ret_list {
+    print " ==> ", CYAN, dumpav(@_), RESET, "\n";
+    return @_;
+}
+
+sub _ret_scalar {
+    my $s = shift;
+    if (my $name = $autowrap_class{ref($s)}) {
+        $name .= $name_count{$name} if $name_count{$name}++;
+        print " ==> ", CYAN, $name, RESET, "\n";
+        $s = wrap(name => $name, obj => $s);
+    }
+    else {
+        print " ==> ", CYAN, dump($s), RESET, "\n";
+    }
+    return $s;
 }
 
 package Data::Dump::Trace::Wrapper;
