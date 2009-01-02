@@ -3,7 +3,7 @@ package Data::Dump::Trace;
 use strict;
 
 use base 'Exporter';
-our @EXPORT_OK = qw(call wrap);
+our @EXPORT_OK = qw(call mcall wrap);
 
 use Data::Dump qw(dump);
 use Term::ANSIColor qw(YELLOW CYAN RESET);
@@ -47,6 +47,27 @@ sub call {
     }
     else {
         my $s = $func->(@_);
+        print " ==> ", CYAN, dump($s), RESET, "\n";
+        return $s;
+    }
+}
+
+sub mcall {
+    my $o = shift;
+    my $method = shift;
+    my $oname = ref($o) ? "\$o" : $o;
+    print YELLOW, $oname, "->", $method, dumpav(@_), RESET;
+    if (!defined wantarray) {
+        print "\n";
+        $o->$method(@_);
+    }
+    elsif (wantarray) {
+        my @s = $o->$method(@_);
+        print " ==> ", CYAN, dumpav(@s), RESET, "\n";
+        return @s;
+    }
+    else {
+        my $s = $o->$method(@_);
         print " ==> ", CYAN, dump($s), RESET, "\n";
         return $s;
     }
