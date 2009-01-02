@@ -3,7 +3,7 @@ package Data::Dump::Trace;
 use strict;
 
 use base 'Exporter';
-our @EXPORT_OK = qw(call mcall wrap);
+our @EXPORT_OK = qw(call mcall wrap autowrap);
 
 use Data::Dump qw(dump);
 use Term::ANSIColor qw(YELLOW CYAN RESET);
@@ -11,6 +11,8 @@ use Carp qw(croak);
 use overload ();
 
 my %obj_name;
+my %autowrap_class;
+my %name_count;
 
 sub dumpav {
     return "(" . dump(@_) . ")" if @_ == 1;
@@ -23,6 +25,19 @@ sub dumpkv {
     my $str = dump(\%h);
     $str =~ s/^\{/(/ && $str =~ s/\}\z/)/;
     return $str;
+}
+
+sub autowrap {
+    while (@_) {
+        my $class = shift;
+        my $name = shift;
+        unless ($name) {
+            $name = lc($class);
+            $name =~ s/.*:://;
+        }
+        $name = '$' . $name unless $name =~ /^\$/;
+        $autowrap_class{$class} = $name;
+    }
 }
 
 sub wrap {
@@ -81,7 +96,14 @@ sub mcall {
     }
     else {
         my $s = $o->$method(@_);
-        print " ==> ", CYAN, dump($s), RESET, "\n";
+        if (my $name = $autowrap_class{ref($s)}) {
+            $name .= $name_count{$name} if $name_count{$name}++;
+            print " ==> ", CYAN, $name, RESET, "\n";
+            $s = wrap(name => $name, obj => $s);
+        }
+        else {
+            print " ==> ", CYAN, dump($s), RESET, "\n";
+        }
         return $s;
     }
 }
