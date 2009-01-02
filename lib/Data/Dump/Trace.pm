@@ -50,6 +50,7 @@ sub autowrap {
             $name = lc($class);
             $name =~ s/.*:://;
         }
+        $name = '$' . $name unless $name =~ /^\$/;
         $autowrap_class{$class} = $name;
     }
 }
