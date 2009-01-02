@@ -46,7 +46,7 @@ sub wrap {
     my $func = $arg{func};
 
     return sub {
-        call($name, $func, @_);
+        call($name, $func, undef, @_);
     } if $func;
 
     if (my $obj = $arg{obj}) {
@@ -63,6 +63,7 @@ sub wrap {
 sub call {
     my $name = shift;
     my $func = shift;
+    my $proto = shift;
     print YELLOW, $name, dumpav(@_), RESET;
     if (!defined wantarray) {
         print "\n";
@@ -79,6 +80,7 @@ sub call {
 sub mcall {
     my $o = shift;
     my $method = shift;
+    my $proto = shift;
     my $oname = ref($o) ? $obj_name{overload::StrVal($o)} || "\$o" : $o;
     print YELLOW, $oname, "->", $method, @_ ? dumpav(@_) : "", RESET;
     if (!defined wantarray) {
@@ -117,7 +119,7 @@ sub AUTOLOAD {
     my $self = shift;
     our $AUTOLOAD;
     my $method = substr($AUTOLOAD, rindex($AUTOLOAD, '::')+2);
-    Data::Dump::Trace::mcall($self->{obj}, $method, @_);
+    Data::Dump::Trace::mcall($self->{obj}, $method, undef, @_);
 }
 
 1;
