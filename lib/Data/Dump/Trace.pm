@@ -7,7 +7,9 @@ our @EXPORT_OK = qw(call mcall wrap);
 
 use Data::Dump qw(dump);
 use Term::ANSIColor qw(YELLOW CYAN RESET);
+use Carp qw(croak);
 
+my %obj_name;
 
 sub dumpav {
     return "(" . dump(@_) . ")" if @_ == 1;
@@ -29,7 +31,12 @@ sub wrap {
 
     return sub {
         call($name, $func, @_);
-    }
+    } if $func;
+
+    my $obj = $arg{obj};
+    return bless { name => $name, obj => $obj }, "Data::Dump::Trace::Wrapper" if $obj;
+
+    croak("Either the 'func' or 'obj' option must be given");
 }
 
 sub call {
@@ -71,6 +78,15 @@ sub mcall {
         print " ==> ", CYAN, dump($s), RESET, "\n";
         return $s;
     }
+}
+
+package Data::Dump::Trace::Wrapper;
+
+sub AUTOLOAD {
+    my $self = shift;
+    our $AUTOLOAD;
+    my $method = substr($AUTOLOAD, rindex($AUTOLOAD, '::')+2);
+    Data::Dump::Trace::mcall($self->{obj}, $method, @_);
 }
 
 1;
