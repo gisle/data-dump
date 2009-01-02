@@ -84,7 +84,7 @@ sub mcall {
     my $o = shift;
     my $method = shift;
     my $oname = ref($o) ? $obj_name{overload::StrVal($o)} || "\$o" : $o;
-    print YELLOW, $oname, "->", $method, dumpav(@_), RESET;
+    print YELLOW, $oname, "->", $method, @_ ? dumpav(@_) : "", RESET;
     if (!defined wantarray) {
         print "\n";
         $o->$method(@_);
