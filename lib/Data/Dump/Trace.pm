@@ -48,7 +48,6 @@ sub autowrap {
             $name = lc($class);
             $name =~ s/.*:://;
         }
-        $name = '$' . $name unless $name =~ /^\$/;
         $autowrap_class{$class} = $name;
     }
 }
@@ -63,6 +62,7 @@ sub wrap {
     } if $func;
 
     if (my $obj = $arg{obj}) {
+        $name = '$' . $name unless $name =~ /^\$/;
         $obj_name{overload::StrVal($obj)} = $name;
         return bless {
             name => $name,
