@@ -8,6 +8,7 @@ our @EXPORT_OK = qw(call mcall wrap);
 use Data::Dump qw(dump);
 use Term::ANSIColor qw(YELLOW CYAN RESET);
 use Carp qw(croak);
+use overload ();
 
 my %obj_name;
 
@@ -33,8 +34,13 @@ sub wrap {
         call($name, $func, @_);
     } if $func;
 
-    my $obj = $arg{obj};
-    return bless { name => $name, obj => $obj }, "Data::Dump::Trace::Wrapper" if $obj;
+    if (my $obj = $arg{obj}) {
+        $obj_name{overload::StrVal($obj)} = $name;
+        return bless {
+            name => $name,
+            obj => $obj,
+        }, "Data::Dump::Trace::Wrapper";
+    }
 
     croak("Either the 'func' or 'obj' option must be given");
 }
@@ -62,7 +68,7 @@ sub call {
 sub mcall {
     my $o = shift;
     my $method = shift;
-    my $oname = ref($o) ? "\$o" : $o;
+    my $oname = ref($o) ? $obj_name{overload::StrVal($o)} || "\$o" : $o;
     print YELLOW, $oname, "->", $method, dumpav(@_), RESET;
     if (!defined wantarray) {
         print "\n";
