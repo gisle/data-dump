@@ -1,5 +1,18 @@
 package Data::Dump::Trace;
 
+# Todo:
+#   - prototypes
+#     in/out parameters
+#     key/value style parameters or return values
+#     globals affected ($!)
+#   - exception
+#   - wrap class
+#   - autowrap in list return
+#   - don't dump return values
+#   - configurable colors
+#   - show call depth using indentation
+#   - time calls
+
 use strict;
 
 use base 'Exporter';
