@@ -149,14 +149,14 @@ sub new {
 
 sub proto_arg {
     my $self = shift;
-    my($arg, $ret) = split(/\s*=+>\s*/, $self->{proto} || "");
+    my($arg, $ret) = split(/\s*=\s*/, $self->{proto} || "");
     $arg ||= '@';
     return $arg;
 }
 
 sub proto_ret {
     my $self = shift;
-    my($arg, $ret) = split(/\s*=+>\s*/, $self->{proto} || "");
+    my($arg, $ret) = split(/\s*=\s*/, $self->{proto} || "");
     $ret ||= '@';
     return $ret;
 }
@@ -199,11 +199,11 @@ sub return_scalar {
     }
     if ($name) {
         $name .= $name_count{$name} if $name_count{$name}++;
-        print " ==> ", $self->color("output", $name), "\n";
+        print " = ", $self->color("output", $name), "\n";
         $s = Data::Dump::Trace::wrap(name => $name, obj => $s, prototypes => $wrap->{prototypes});
     }
     else {
-        print " ==> ", $self->color("output", _dump($s)), "\n";
+        print " = ", $self->color("output", _dump($s)), "\n";
     }
     return $s;
 }
@@ -212,7 +212,7 @@ sub return_list {
     my $self = shift;
     my $arg = shift;
     $self->print_call($arg);
-    print " ==> ", $self->color("output", $self->proto_ret eq "%" ? _dumpkv(@_) : _dumpav(@_)), "\n";
+    print " = ", $self->color("output", $self->proto_ret eq "%" ? _dumpkv(@_) : _dumpav(@_)), "\n";
     return @_;
 }
 
