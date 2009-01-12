@@ -120,6 +120,7 @@ use Data::Dump ();
 our %COLOR = (
     name => "yellow",
     output => "cyan",
+    debug => "red",
 );
 
 %COLOR = () unless -t STDOUT;
@@ -143,7 +144,15 @@ sub new {
         name => $name,
         proto => $proto,
     }, $class;
-    $self->{input} = $self->proto_arg eq "%" ? _dumpkv(@$input_args) : _dumpav(@$input_args);
+    my $proto_arg = $self->proto_arg;
+    if ($proto_arg =~ /o/) {
+        for (@$input_args) {
+            push(@{$self->{input_av}}, _dump($_));
+        }
+    }
+    else {
+        $self->{input} = $proto_arg eq "%" ? _dumpkv(@$input_args) : _dumpav(@$input_args);
+    }
     return $self;
 }
 
@@ -169,10 +178,32 @@ sub color {
 
 sub print_call {
     my $self = shift;
-    my $arg = shift;
-    my $input = $self->{input};
-    $input = "" if $input eq "()" && $self->{name} =~ /->/;
-    print $self->color("name", "$self->{name}"), $self->color("input", $input);
+    my $outarg = shift;
+    print $self->color("name", "$self->{name}");
+    if (my $input = $self->{input}) {
+        $input = "" if $input eq "()" && $self->{name} =~ /->/;
+        print $self->color("input", $input);
+    }
+    else {
+        my $proto_arg = $self->proto_arg;
+        print "(";
+        my $i = 0;
+        for (@{$self->{input_av}}) {
+            print ", " if $i;
+            my $proto = substr($proto_arg, 0, 1, "");
+            if ($proto ne "o") {
+                print $self->color("input", $_);
+            }
+            if ($proto eq "o" || $proto eq "O") {
+                print " = " if $proto eq "O";
+                print $self->color("output", _dump($outarg->[$i]));
+            }
+        }
+        continue {
+            $i++;
+        }
+        print ")";
+    }
 }
 
 sub return_void {
