@@ -15,7 +15,7 @@ $VERSION = "0.01";
 use strict;
 
 use base 'Exporter';
-our @EXPORT_OK = qw(call mcall wrap autowrap);
+our @EXPORT_OK = qw(call mcall wrap autowrap trace);
 
 use Carp qw(croak);
 use overload ();
@@ -61,6 +61,13 @@ sub wrap {
     }
 
     croak("Either the 'func' or 'obj' option must be given");
+}
+
+sub trace {
+    my($symbol, $prototype) = @_;
+    no strict 'refs';
+    no warnings 'redefine';
+    *{$symbol} = wrap(name => $symbol, func => \&{$symbol}, proto => $prototype);
 }
 
 sub call {
@@ -320,6 +327,8 @@ invoked then a trace is printed after the underlying function has returned.
 When a method on a wrapped object is invoked then a trace is printed
 after the methods on the underlying objects has returned.
 
+See L</"Prototypes"> for description of the C<proto> argument.
+
 =item call( $name, \&func, $proto, @ARGS )
 
 Calls the given function with the given arguments.  The trace will use
@@ -334,6 +343,10 @@ See L</"Prototypes"> for description of the $proto argument.
 Calls the given method with the given arguments.
 
 See L</"Prototypes"> for description of the $proto argument.
+
+=item trace( $symbol, $prototype )
+
+Replaces the function given by $symbol with a wrapped function.
 
 =back
 
