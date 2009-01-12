@@ -108,10 +108,17 @@ sub AUTOLOAD {
 
 package Data::Dump::Trace::Call;
 
-use Term::ANSIColor qw(YELLOW CYAN RESET);
+use Term::ANSIColor ();
 use Data::Dump ();
 
 *_dump = \&Data::Dump::dump;
+
+our %COLOR = (
+    name => "yellow",
+    output => "cyan",
+);
+
+%COLOR = () unless -t STDOUT;
 
 sub _dumpav {
     return "(" . _dump(@_) . ")" if @_ == 1;
@@ -136,12 +143,18 @@ sub new {
     return $self;
 }
 
+sub color {
+    my($self, $category, $text) = @_;
+    return $text unless $COLOR{$category};
+    return Term::ANSIColor::colored($text, $COLOR{$category});
+}
+
 sub print_call {
     my $self = shift;
     my $arg = shift;
     my $input = $self->{input};
     $input = "" if $input eq "()" && $self->{name} =~ /->/;
-    print YELLOW, "$self->{name}", RESET, $input;
+    print $self->color("name", "$self->{name}"), $self->color("input", $input);
 }
 
 sub return_void {
@@ -159,11 +172,11 @@ sub return_scalar {
     my $s = shift;
     if (my $name = $autowrap_class{ref($s)}) {
         $name .= $name_count{$name} if $name_count{$name}++;
-        print " ==> ", CYAN, $name, RESET, "\n";
+        print " ==> ", $self->color("output", $name), "\n";
         $s = Data::Dump::Trace::wrap(name => $name, obj => $s);
     }
     else {
-        print " ==> ", CYAN, _dump($s), RESET, "\n";
+        print " ==> ", $self->color("output", _dump($s)), "\n";
     }
     return $s;
 }
@@ -172,7 +185,7 @@ sub return_list {
     my $self = shift;
     my $arg = shift;
     $self->print_call($arg);
-    print " ==> ", CYAN, _dumpav(@_), RESET, "\n";
+    print " ==> ", $self->color("output", _dumpav(@_)), "\n";
     return @_;
 }
 
