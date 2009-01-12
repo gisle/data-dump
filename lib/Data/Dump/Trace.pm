@@ -1,6 +1,6 @@
 package Data::Dump::Trace;
 
-$VERSION = "0.01";
+$VERSION = "0.02";
 
 # Todo:
 #   - prototypes
@@ -352,6 +352,9 @@ Replaces the function given by $symbol with a wrapped function.
 =back
 
 =head2 Prototypes
+
+B<Note: The prototype string syntax described here is experimental and
+likely to change in revisions of this interface>.
 
 The $proto argument to call() and mcall() can optionally provide a
 prototype for the function call.  This give the tracer hints about how
