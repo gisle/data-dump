@@ -44,9 +44,10 @@ sub wrap {
     my %arg = @_;
     my $name = $arg{name} || "func";
     my $func = $arg{func};
+    my $proto = $arg{proto};
 
     return sub {
-        call($name, $func, undef, @_);
+        call($name, $func, $proto, @_);
     } if $func;
 
     if (my $obj = $arg{obj}) {
@@ -55,7 +56,7 @@ sub wrap {
         return bless {
             name => $name,
             obj => $obj,
-            prototypes => $arg{prototypes},
+            proto => $arg{proto},
         }, "Data::Dump::Trace::Wrapper";
     }
 
@@ -103,7 +104,7 @@ sub AUTOLOAD {
     my $self = shift;
     our $AUTOLOAD;
     my $method = substr($AUTOLOAD, rindex($AUTOLOAD, '::')+2);
-    Data::Dump::Trace::mcall($self->{obj}, $method, $self->{prototypes}{$method}, @_);
+    Data::Dump::Trace::mcall($self->{obj}, $method, $self->{proto}{$method}, @_);
 }
 
 package Data::Dump::Trace::Call;
@@ -228,7 +229,7 @@ sub return_scalar {
     if ($name) {
         $name .= $name_count{$name} if $name_count{$name}++;
         print " = ", $self->color("output", $name), "\n";
-        $s = Data::Dump::Trace::wrap(name => $name, obj => $s, prototypes => $wrap->{prototypes});
+        $s = Data::Dump::Trace::wrap(name => $name, obj => $s, proto => $wrap->{proto});
     }
     else {
         print " = ", $self->color("output", _dump($s));
@@ -304,15 +305,15 @@ Alternative is to pass an %info hash for each class.  The recognized keys are:
 
 The prefix string used to name objects of this type.
 
-=item prototypes => \%hash
+=item proto => \%hash
 
 A hash of prototypes to use for the methods when an object is wrapped.
 
 =back
 
-=item wrap( name => $str, func => \&func )
+=item wrap( name => $str, func => \&func, proto => $proto )
 
-=item wrap( name => $str, obj => $obj, prototypes => \%hash )
+=item wrap( name => $str, obj => $obj, proto => \%hash )
 
 Returns a wrapped function or object.  When a wrapped function is
 invoked then a trace is printed after the underlying function has returned.
