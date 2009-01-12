@@ -91,6 +91,7 @@ sub mcall {
     my $o = shift;
     my $method = shift;
     my $proto = shift;
+    return if $method eq "DESTROY" && !$o->can("DESTROY");
     my $oname = ref($o) ? $obj_name{overload::StrVal($o)} || "\$o" : $o;
     my $fmt = Data::Dump::Trace::Call->new("$oname->$method", $proto, \@_);
     if (!defined wantarray) {
