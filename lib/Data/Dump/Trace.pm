@@ -290,25 +290,41 @@ The following functions are provided:
 
 =item autowrap( $class1 => $prefix1,  $class2 => $prefix2, ... )
 
+=item autowrap( $class1 => \%info1, $class2 => \%info2, ... )
+
 Register classes whose objects are are automatically wrapped when
 returned by one of the call functions below.  If $prefix is provided
 it will be used as to name the objects.
 
+Alternative is to pass an %info hash for each class.  The recognized keys are:
+
+=over
+
+=item prefix => $string
+
+The prefix string used to name objects of this type.
+
+=item prototypes => \%hash
+
+A hash of prototypes to use for the methods when an object is wrapped.
+
+=back
+
 =item wrap( name => $str, func => \&func )
 
-=item wrap( name => $str, obj => $obj )
+=item wrap( name => $str, obj => $obj, prototypes => \%hash )
 
 Returns a wrapped function or object.  When a wrapped function is
-invoked then a trace is printed as the underlying function is invoked.
+invoked then a trace is printed after the underlying function has returned.
 When a method on a wrapped object is invoked then a trace is printed
-as methods on the underlying objects are invoked.
+after the methods on the underlying objects has returned.
 
 =item call( $name, \&func, $proto, @ARGS )
 
 Calls the given function with the given arguments.  The trace will use
 $name as the name of the function.
 
-The $proto argument is reserved for future extensions.
+See L</"Prototypes"> for description of the $proto argument.
 
 =item mcall( $class, $method, $proto, @ARGS )
 
@@ -316,9 +332,52 @@ The $proto argument is reserved for future extensions.
 
 Calls the given method with the given arguments.
 
-The $proto argument is reserved for future extensions.
+See L</"Prototypes"> for description of the $proto argument.
 
 =back
+
+=head2 Prototypes
+
+The $proto argument to call() and mcall() can optionally provide a
+prototype for the function call.  This give the tracer hints about how
+to best format the argument lists and if there are I<in/out> or I<out>
+arguments.  The general form for the prototype string is:
+
+   <arguments> = <return_value>
+
+The default prototype is "@ = @"; list of values as input and list of
+values as output.
+
+The value '%' can be used for both arguments and return value to say
+that key/value pair style lists are used.
+
+Alternatively, individual positional arguments can be listed each
+represented by a letter:
+
+=over
+
+=item C<i>
+
+input argument
+
+=item C<o>
+
+output argument
+
+=item C<O>
+
+both input and output argument
+
+=back
+
+If the return value prototype has C<!> appended, then it signals that
+this function sets errno ($!) when it returns a false value.  The
+trace will display the current value of errno in that case.
+
+If the return value prototype looks like a variable name (with C<$>
+prefix), and the function returns a blessed object, then the variable
+name will be used as prefix and the returned object automatically
+traced.
 
 =head1 SEE ALSO
 
