@@ -21,27 +21,12 @@ use strict;
 use base 'Exporter';
 our @EXPORT_OK = qw(call mcall wrap autowrap);
 
-use Data::Dump qw(dump);
-use Term::ANSIColor qw(YELLOW CYAN RESET);
 use Carp qw(croak);
 use overload ();
 
 my %obj_name;
 my %autowrap_class;
 my %name_count;
-
-sub dumpav {
-    return "(" . dump(@_) . ")" if @_ == 1;
-    return dump(@_);
-}
-
-sub dumpkv {
-    return dumpav(@_) if @_ % 2;
-    my %h = @_;
-    my $str = dump(\%h);
-    $str =~ s/^\{/(/ && $str =~ s/\}\z/)/;
-    return $str;
-}
 
 sub autowrap {
     while (@_) {
@@ -81,16 +66,16 @@ sub call {
     my $name = shift;
     my $func = shift;
     my $proto = shift;
-    print YELLOW, $name, dumpav(@_), RESET;
+    my $fmt = Data::Dump::Trace::Call->new($name, $proto, \@_);
     if (!defined wantarray) {
-        print "\n";
         $func->(@_);
+        return $fmt->return_void(\@_);
     }
     elsif (wantarray) {
-        return _ret_list($func->(@_));
+        return $fmt->return_list(\@_, $func->(@_));
     }
     else {
-        return _ret_scalar($func->(@_));
+        return $fmt->return_scalar(\@_, scalar $func->(@_));
     }
 }
 
@@ -99,35 +84,17 @@ sub mcall {
     my $method = shift;
     my $proto = shift;
     my $oname = ref($o) ? $obj_name{overload::StrVal($o)} || "\$o" : $o;
-    print YELLOW, $oname, "->", $method, @_ ? dumpav(@_) : "", RESET;
+    my $fmt = Data::Dump::Trace::Call->new("$oname->$method", $proto, \@_);
     if (!defined wantarray) {
-        print "\n";
         $o->$method(@_);
+        return $fmt->return_void(\@_);
     }
     elsif (wantarray) {
-        return _ret_list($o->$method(@_));
+        return $fmt->return_list(\@_, $o->$method(@_));
     }
     else {
-        return _ret_scalar($o->$method(@_));
+        return $fmt->return_scalar(\@_, scalar $o->$method(@_));
     }
-}
-
-sub _ret_list {
-    print " ==> ", CYAN, dumpav(@_), RESET, "\n";
-    return @_;
-}
-
-sub _ret_scalar {
-    my $s = shift;
-    if (my $name = $autowrap_class{ref($s)}) {
-        $name .= $name_count{$name} if $name_count{$name}++;
-        print " ==> ", CYAN, $name, RESET, "\n";
-        $s = wrap(name => $name, obj => $s);
-    }
-    else {
-        print " ==> ", CYAN, dump($s), RESET, "\n";
-    }
-    return $s;
 }
 
 package Data::Dump::Trace::Wrapper;
@@ -137,6 +104,74 @@ sub AUTOLOAD {
     our $AUTOLOAD;
     my $method = substr($AUTOLOAD, rindex($AUTOLOAD, '::')+2);
     Data::Dump::Trace::mcall($self->{obj}, $method, undef, @_);
+}
+
+package Data::Dump::Trace::Call;
+
+use Term::ANSIColor qw(YELLOW CYAN RESET);
+use Data::Dump ();
+
+*_dump = \&Data::Dump::dump;
+
+sub _dumpav {
+    return "(" . _dump(@_) . ")" if @_ == 1;
+    return _dump(@_);
+}
+
+sub _dumpkv {
+    return _dumpav(@_) if @_ % 2;
+    my %h = @_;
+    my $str = _dump(\%h);
+    $str =~ s/^\{/(/ && $str =~ s/\}\z/)/;
+    return $str;
+}
+
+sub new {
+    my($class, $name, $proto, $input_args) = @_;
+    my $self = bless {
+        name => $name,
+        proto => $proto,
+        input => _dumpav(@$input_args),
+    }, $class;
+    return $self;
+}
+
+sub print_call {
+    my $self = shift;
+    my $arg = shift;
+    print YELLOW, "$self->{name}", RESET, $self->{input};
+}
+
+sub return_void {
+    my $self = shift;
+    my $arg = shift;
+    $self->print_call($arg);
+    print "\n";
+    return;
+}
+
+sub return_scalar {
+    my $self = shift;
+    my $arg = shift;
+    $self->print_call($arg);
+    my $s = shift;
+    if (my $name = $autowrap_class{ref($s)}) {
+        $name .= $name_count{$name} if $name_count{$name}++;
+        print " ==> ", CYAN, $name, RESET, "\n";
+        $s = Data::Dump::Trace::wrap(name => $name, obj => $s);
+    }
+    else {
+        print " ==> ", CYAN, _dump($s), RESET, "\n";
+    }
+    return $s;
+}
+
+sub return_list {
+    my $self = shift;
+    my $arg = shift;
+    $self->print_call($arg);
+    print " ==> ", CYAN, _dumpav(@_), RESET, "\n";
+    return @_;
 }
 
 1;
