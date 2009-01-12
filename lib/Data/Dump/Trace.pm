@@ -31,13 +31,16 @@ my %name_count;
 sub autowrap {
     while (@_) {
         my $class = shift;
-        my $name = shift;
-        unless ($name) {
-            $name = lc($class);
-            $name =~ s/.*:://;
+        my $info = shift;
+        $info = { prefix => $info } unless ref($info);
+        for ($info->{prefix}) {
+            unless ($_) {
+                $_ = lc($class);
+                s/.*:://;
+            }
+            $_ = '$' . $_ unless /^\$/;
         }
-        $name = '$' . $name unless $name =~ /^\$/;
-        $autowrap_class{$class} = $name;
+        $autowrap_class{$class} = $info;
     }
 }
 
@@ -56,6 +59,7 @@ sub wrap {
         return bless {
             name => $name,
             obj => $obj,
+            prototypes => $arg{prototypes},
         }, "Data::Dump::Trace::Wrapper";
     }
 
@@ -103,7 +107,7 @@ sub AUTOLOAD {
     my $self = shift;
     our $AUTOLOAD;
     my $method = substr($AUTOLOAD, rindex($AUTOLOAD, '::')+2);
-    Data::Dump::Trace::mcall($self->{obj}, $method, undef, @_);
+    Data::Dump::Trace::mcall($self->{obj}, $method, $self->{prototypes}{$method}, @_);
 }
 
 package Data::Dump::Trace::Call;
@@ -138,9 +142,23 @@ sub new {
     my $self = bless {
         name => $name,
         proto => $proto,
-        input => _dumpav(@$input_args),
     }, $class;
+    $self->{input} = $self->proto_arg eq "%" ? _dumpkv(@$input_args) : _dumpav(@$input_args);
     return $self;
+}
+
+sub proto_arg {
+    my $self = shift;
+    my($arg, $ret) = split(/\s*=+>\s*/, $self->{proto} || "");
+    $arg ||= '@';
+    return $arg;
+}
+
+sub proto_ret {
+    my $self = shift;
+    my($arg, $ret) = split(/\s*=+>\s*/, $self->{proto} || "");
+    $ret ||= '@';
+    return $ret;
 }
 
 sub color {
@@ -170,10 +188,19 @@ sub return_scalar {
     my $arg = shift;
     $self->print_call($arg);
     my $s = shift;
-    if (my $name = $autowrap_class{ref($s)}) {
+    my $name;
+    my $proto_ret = $self->proto_ret;
+    my $wrap = $autowrap_class{ref($s)};
+    if ($proto_ret =~ /^\$\w+\z/ && ref($s) && ref($s) !~ /^(?:ARRAY|HASH|CODE|GLOB)\z/) {
+        $name = $proto_ret;
+    }
+    else {
+        $name = $wrap->{prefix} if $wrap;
+    }
+    if ($name) {
         $name .= $name_count{$name} if $name_count{$name}++;
         print " ==> ", $self->color("output", $name), "\n";
-        $s = Data::Dump::Trace::wrap(name => $name, obj => $s);
+        $s = Data::Dump::Trace::wrap(name => $name, obj => $s, prototypes => $wrap->{prototypes});
     }
     else {
         print " ==> ", $self->color("output", _dump($s)), "\n";
@@ -185,7 +212,7 @@ sub return_list {
     my $self = shift;
     my $arg = shift;
     $self->print_call($arg);
-    print " ==> ", $self->color("output", _dumpav(@_)), "\n";
+    print " ==> ", $self->color("output", $self->proto_ret eq "%" ? _dumpkv(@_) : _dumpav(@_)), "\n";
     return @_;
 }
 
