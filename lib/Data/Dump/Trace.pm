@@ -4,13 +4,9 @@ $VERSION = "0.01";
 
 # Todo:
 #   - prototypes
-#     in/out parameters
-#     key/value style parameters or return values
-#     globals affected ($!)
+#     in/out parameters key/value style
 #   - exception
 #   - wrap class
-#   - autowrap in list return
-#   - don't dump return values
 #   - configurable colors
 #   - show call depth using indentation
 #   - show nested calls sensibly
@@ -120,6 +116,7 @@ use Data::Dump ();
 our %COLOR = (
     name => "yellow",
     output => "cyan",
+    error => "red",
     debug => "red",
 );
 
@@ -234,7 +231,11 @@ sub return_scalar {
         $s = Data::Dump::Trace::wrap(name => $name, obj => $s, prototypes => $wrap->{prototypes});
     }
     else {
-        print " = ", $self->color("output", _dump($s)), "\n";
+        print " = ", $self->color("output", _dump($s));
+        if (!$s && $proto_ret =~ /!/ && $!) {
+            print " ", $self->color("error", errno($!));
+        }
+        print "\n";
     }
     return $s;
 }
@@ -245,6 +246,18 @@ sub return_list {
     $self->print_call($arg);
     print " = ", $self->color("output", $self->proto_ret eq "%" ? _dumpkv(@_) : _dumpav(@_)), "\n";
     return @_;
+}
+
+sub errno {
+    my $t = "";
+    for (keys %!) {
+        if ($!{$_}) {
+            $t = $_;
+            last;
+        }
+    }
+    my $n = int($!);
+    return "$t($n) $!";
 }
 
 1;
