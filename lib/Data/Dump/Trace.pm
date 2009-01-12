@@ -139,7 +139,9 @@ sub new {
 sub print_call {
     my $self = shift;
     my $arg = shift;
-    print YELLOW, "$self->{name}", RESET, $self->{input};
+    my $input = $self->{input};
+    $input = "" if $input eq "()" && $self->{name} =~ /->/;
+    print YELLOW, "$self->{name}", RESET, $input;
 }
 
 sub return_void {
