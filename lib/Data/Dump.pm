@@ -258,7 +258,7 @@ sub _dump
 	my @orig_keys = keys %$rval;
 	my $text_keys = 0;
 	for (@orig_keys) {
-	    $text_keys++, last unless $_ eq "0" || /^[-+]?[1-9]\d*(?:.\d+)?\z/;
+	    $text_keys++, last unless $_ eq "0" || /^[-+]?[1-9]\d*(?:\.\d+)?\z/;
 	}
 
 	if ($text_keys) {
