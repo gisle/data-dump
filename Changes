@@ -1,3 +1,11 @@
+2009-07-26  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.15
+
+   Fixed regexp that determines if hash keys are numeric [RT#48003]
+
+
+
 2009-01-12  Gisle Aas <gisle@ActiveState.com>
 
    Release 1.14
