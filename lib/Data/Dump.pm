@@ -117,13 +117,25 @@ sub ddx {
     print $out;
 }
 
+sub _filter {
+    my($rval, $type, $class, $ref) = @_;
+    if ($type eq "SCALAR" && $$rval =~ /^\d+$/) {
+	return { replace_with => $$rval * 2 };
+    }
+    if ($class && $class->isa("URI")) {
+	#return { replace_class => "URI" };
+	return { replace_with => "<$rval>" };
+    }
+    return;
+}
+
 sub _dump
 {
     my $ref  = ref $_[0];
     my $rval = $ref ? $_[0] : \$_[0];
     shift;
 
-    my($name, $idx, $dont_remember) = @_;
+    my($name, $idx, $dont_remember, $dont_filter) = @_;
 
     my($class, $type, $id);
     if (overload::StrVal($rval) =~ /^(?:([^=]+)=)?([A-Z]+)\(0x([^\)]+)\)$/) {
@@ -137,6 +149,17 @@ sub _dump
 	$type = "REF" if $ref eq "REF";
     }
     warn "\$$name(@$idx) $class $type $id ($ref)" if $DEBUG;
+
+    unless ($dont_filter) {
+	if (my $f = _filter($rval, $type, $class, $ref)) {
+	    if (my $v = $f->{replace_with}) {
+		return _dump($v, $name, $idx, 1, 1);
+	    }
+	    if (my $c = $f->{replace_class}) {
+		$class = $c;
+	    }
+	}
+    }
 
     unless ($dont_remember) {
 	if (my $s = $seen{$id}) {
