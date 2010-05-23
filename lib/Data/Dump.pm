@@ -118,11 +118,12 @@ sub ddx {
 }
 
 sub _filter {
-    my($rval, $type, $class, $ref) = @_;
+    my($rval, $class, $type, $ref) = @_;
     if ($type eq "SCALAR" && $$rval =~ /^\d+$/) {
 	return { replace_with => $$rval * 2 };
     }
     if ($class && $class->isa("URI")) {
+	return { comment => "A URI subclass" };
 	#return { replace_class => "URI" };
 	return { replace_with => "<$rval>" };
     }
@@ -150,13 +151,17 @@ sub _dump
     }
     warn "\$$name(@$idx) $class $type $id ($ref)" if $DEBUG;
 
+    my $comment;
     unless ($dont_filter) {
-	if (my $f = _filter($rval, $type, $class, $ref)) {
+	if (my $f = _filter($rval, $ref && $class, $type, $ref)) {
 	    if (my $v = $f->{replace_with}) {
 		return _dump($v, $name, $idx, 1, 1);
 	    }
 	    if (my $c = $f->{replace_class}) {
 		$class = $c;
+	    }
+	    if (my $c = $f->{comment}) {
+		$comment = $c;
 	    }
 	}
     }
@@ -355,6 +360,11 @@ sub _dump
 
     if ($class && $ref) {
 	$out = "bless($out, " . quote($class) . ")";
+    }
+    if ($comment) {
+	$comment =~ s/^/# /g;
+	$comment .= "\n" unless $comment =~ /\n\z/;
+	$out = "$comment$out";
     }
     return $out;
 }
