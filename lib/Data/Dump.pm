@@ -119,7 +119,7 @@ sub ddx {
 
 sub _filter {
     my($rval, $class, $type, $ref) = @_;
-    if ($type eq "SCALAR" && $$rval =~ /^\d+$/) {
+    if ($type eq "SCALAR" && $$rval && $$rval =~ /^\d+$/) {
 	return { replace_with => $$rval * 2, comment => "\n Used to be $$rval" };
     }
     if (!$class && $type eq "SCALAR" && length($$rval) > 20) {
