@@ -122,6 +122,9 @@ sub _filter {
     if ($type eq "SCALAR" && $$rval =~ /^\d+$/) {
 	return { replace_with => $$rval * 2, comment => "\n Used to be $$rval" };
     }
+    if (!$class && $type eq "SCALAR" && length($$rval) > 20) {
+	return { replace_with => substr($$rval, 0, 10) . "..." . substr($$rval, -5) }
+    }
     if ($class && $class->isa("URI")) {
 	return { replace_with => "<$rval>", comment => "Actually a URI subclass" };
     }
