@@ -122,6 +122,9 @@ sub _filter {
     if ($type eq "SCALAR" && $$rval && $$rval =~ /^\d+$/) {
 	return { replace_with => $$rval * 2, comment => "\n Used to be $$rval" };
     }
+    if ($type eq "SCALAR" && $$rval) {
+	return { use_repr => "..." };
+    }
     if (!$class && $type eq "SCALAR" && length($$rval) > 20) {
 	return { replace_with => substr($$rval, 0, 10) . "..." . substr($$rval, -5) }
     }
@@ -155,6 +158,7 @@ sub _dump
     }
     warn "\$$name(@$idx) $class $type $id ($ref)" if $DEBUG;
 
+    my $out;
     my $hide_keys;
     unless ($dont_filter) {
 	if (my $f = _filter($rval, $ref && $class, $type, $ref)) {
@@ -166,6 +170,10 @@ sub _dump
 	    }
 	    if (my $c = $f->{comment}) {
 		$comment = $c;
+	    }
+	    if (defined(my $c = $f->{use_repr})) {
+		$out = $c;
+		$dont_remember++;
 	    }
 	    if (my $h = $f->{hide_keys}) {
 		if (ref($h) eq "ARRAY") {
@@ -196,8 +204,10 @@ sub _dump
 	$seen{$id} = [$name, $idx];
     }
 
-    my $out;
-    if ($type eq "SCALAR" || $type eq "REF" || $type eq "REGEXP") {
+    if (defined $out) {
+	# keep it
+    }
+    elsif ($type eq "SCALAR" || $type eq "REF" || $type eq "REGEXP") {
 	if ($ref) {
 	    if ($class && $class eq "Regexp") {
 		my $v = "$rval";
