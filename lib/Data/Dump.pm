@@ -271,7 +271,7 @@ sub _dump
 	for my $key (@orig_keys) {
 	    my $val = \$rval->{$key};
 	    $key = quote($key) if $is_perl_keyword{$key} ||
-		                  !($key =~ /^[a-zA-Z_]\w{0,19}\z/ ||
+		                  !($key =~ /^[a-zA-Z_]\w*\z/ ||
 				    $key =~ /^-?[1-9]\d{0,8}\z/
 				    );
 
