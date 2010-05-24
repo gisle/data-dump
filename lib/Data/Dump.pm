@@ -128,6 +128,9 @@ sub _filter {
     if ($class && $class->isa("URI")) {
 	return { replace_with => "<$rval>", comment => "Actually a URI subclass" };
     }
+    if ($class && $class->isa("HTTP::Message")) {
+	return { hide_keys => [qw(_request)] };
+    }
     return;
 }
 
@@ -152,6 +155,7 @@ sub _dump
     }
     warn "\$$name(@$idx) $class $type $id ($ref)" if $DEBUG;
 
+    my $hide_keys;
     unless ($dont_filter) {
 	if (my $f = _filter($rval, $ref && $class, $type, $ref)) {
 	    if (my $v = $f->{replace_with}) {
@@ -162,6 +166,16 @@ sub _dump
 	    }
 	    if (my $c = $f->{comment}) {
 		$comment = $c;
+	    }
+	    if (my $h = $f->{hide_keys}) {
+		if (ref($h) eq "ARRAY") {
+		    $hide_keys = sub {
+			for my $k (@$h) {
+			    return 1 if $k eq $_[0];
+			}
+			return 0;
+		    };
+		}
 	    }
 	}
     }
@@ -284,6 +298,9 @@ sub _dump
 	my $kstat_sum2 = 0;
 
 	my @orig_keys = keys %$rval;
+	if ($hide_keys) {
+	    @orig_keys = grep !$hide_keys->($_), @orig_keys;
+	}
 	my $text_keys = 0;
 	for (@orig_keys) {
 	    $text_keys++, last unless /^[-+]?(?:0|[1-9]\d*)(?:\.\d+)?\z/;
