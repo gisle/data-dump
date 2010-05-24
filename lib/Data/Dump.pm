@@ -364,6 +364,7 @@ sub _dump
     if ($comment) {
 	$comment =~ s/^/# /gm;
 	$comment .= "\n" unless $comment =~ /\n\z/;
+	$comment =~ s/^#[ \t]+\n/\n/;
 	$out = "$comment$out";
     }
     return $out;
