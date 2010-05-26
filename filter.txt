@@ -25,7 +25,8 @@ replace_class => $class
 
     make it look as if the current object is of the given $class
     instead of the class it really has.  The internals of the object
-    is dumped in the regular way
+    is dumped in the regular way.  The $class can be them empty string
+    to make Data::Dump pretend the object wasn't blessed at all.
 
 hide_keys => ['key1', 'key2',...]
 hide_keys => \&code

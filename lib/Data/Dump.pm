@@ -128,6 +128,9 @@ sub _filter {
     if (!$class && $type eq "SCALAR" && length($$rval) > 20) {
 	return { replace_with => substr($$rval, 0, 10) . "..." . substr($$rval, -5) }
     }
+    if ($class && $class->isa("LWP::UserAgent")) {
+	return { replace_class => "", comment => "LWP::UserAgent" }
+    }
     if ($class && $class->isa("URI")) {
 	return { replace_with => "<$rval>", comment => "Actually a URI subclass" };
     }
@@ -165,7 +168,7 @@ sub _dump
 	    if (my $v = $f->{replace_with}) {
 		return _dump($v, $name, $idx, 1, 1, $f->{comment});
 	    }
-	    if (my $c = $f->{replace_class}) {
+	    if (defined(my $c = $f->{replace_class})) {
 		$class = $c;
 	    }
 	    if (my $c = $f->{comment}) {
