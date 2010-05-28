@@ -121,11 +121,7 @@ sub _filter {
     my($rval, $class, $type, $ref, $pclass, $pidx) = @_;
     if (0) {
 	# trace arguments
-	my $xclass = $class;
-	for ($xclass, $type, $ref, $pclass, $pidx) {
-	    $_ = "<undef>" unless defined;
-	}
-	print "FFF [$xclass] [$type] [$pclass] [$pidx]\n";
+	print "FFF [$class] [$type] [$pclass] [$pidx]\n";
     }
     if ($type eq "SCALAR" && $$rval && $$rval =~ /^\d+$/) {
 	return { replace_with => $$rval * 2, comment => "\n Used to be $$rval" };
@@ -173,9 +169,9 @@ sub _dump
     my $comment;
     my $hide_keys;
     unless ($dont_filter) {
-	my $pself;
+	my $pself = "";
 	$pself = fullname("self", [@$idx[$pidx..(@$idx - 1)]]) if $pclass;
-	if (my $f = _filter($rval, $ref && $class, $type, $ref, $pclass, $pself)) {
+	if (my $f = _filter($rval, $ref && $class || "", $type, $ref, $pclass || "", $pself)) {
 	    if (my $v = $f->{replace_with}) {
 		$out = _dump($v, $name, $idx, 1, 1);
 		$dont_remember++;
