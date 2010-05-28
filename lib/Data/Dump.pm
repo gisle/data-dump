@@ -146,7 +146,7 @@ sub _dump
     my $rval = $ref ? $_[0] : \$_[0];
     shift;
 
-    my($name, $idx, $dont_remember, $dont_filter, $comment) = @_;
+    my($name, $idx, $dont_remember, $dont_filter) = @_;
 
     my($class, $type, $id);
     if (overload::StrVal($rval) =~ /^(?:([^=]+)=)?([A-Z]+)\(0x([^\)]+)\)$/) {
@@ -162,11 +162,13 @@ sub _dump
     warn "\$$name(@$idx) $class $type $id ($ref)" if $DEBUG;
 
     my $out;
+    my $comment;
     my $hide_keys;
     unless ($dont_filter) {
 	if (my $f = _filter($rval, $ref && $class, $type, $ref)) {
 	    if (my $v = $f->{replace_with}) {
-		return _dump($v, $name, $idx, 1, 1, $f->{comment});
+		$out = _dump($v, $name, $idx, 1, 1);
+		$dont_remember++;
 	    }
 	    if (defined(my $c = $f->{replace_class})) {
 		$class = $c;
