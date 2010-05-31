@@ -242,7 +242,7 @@ sub _dump
 
 	for my $key (@orig_keys) {
 	    my $val = \$rval->{$key};
-	    $key = quote($key) unless $key =~ /^[a-zA-Z_]\w*\z/ ||
+	    $key = quote($key) unless $key =~ /^-?[a-zA-Z_]\w*\z/ ||
 				      $key =~ /^-?[1-9]\d{0,8}\z/;
 
 	    $kstat_max = length($key) if length($key) > $kstat_max;
