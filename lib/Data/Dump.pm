@@ -89,32 +89,7 @@ sub ddx {
     print $out;
 }
 
-sub _filter {
-    my($rval, $class, $type, $ref, $pclass, $pidx) = @_;
-    if (0) {
-	# trace arguments
-	print "FFF [$class] [$type] [$pclass] [$pidx]\n";
-    }
-    if ($type eq "SCALAR" && $$rval && $$rval =~ /^\d+$/) {
-	return { replace_with => $$rval * 2, comment => "\n Used to be $$rval" };
-    }
-    if ($type eq "SCALAR" && $$rval) {
-	return { use_repr => "..." };
-    }
-    if (!$class && $type eq "SCALAR" && defined($$rval) && length($$rval) > 20) {
-	return { replace_with => substr($$rval, 0, 10) . "..." . substr($$rval, -5) }
-    }
-    if ($class && $class->isa("LWP::UserAgent")) {
-	#return { replace_class => "", comment => "LWP::UserAgent" }
-    }
-    if ($class && $class->isa("URI")) {
-	return { replace_with => "<$rval>", comment => "Actually a URI subclass" };
-    }
-    if ($class && $class->isa("HTTP::Message")) {
-	return { hide_keys => [qw(_request)] };
-    }
-    return;
-}
+our @FILTERS;
 
 sub _dump
 {
@@ -122,7 +97,7 @@ sub _dump
     my $rval = $ref ? $_[0] : \$_[0];
     shift;
 
-    my($name, $idx, $dont_remember, $dont_filter, $pclass, $pidx) = @_;
+    my($name, $idx, $dont_remember, $pclass, $pidx) = @_;
 
     my($class, $type, $id);
     if (overload::StrVal($rval) =~ /^(?:([^=]+)=)?([A-Z]+)\(0x([^\)]+)\)$/) {
@@ -140,32 +115,37 @@ sub _dump
     my $out;
     my $comment;
     my $hide_keys;
-    unless ($dont_filter) {
+    if (@FILTERS) {
 	my $pself = "";
 	$pself = fullname("self", [@$idx[$pidx..(@$idx - 1)]]) if $pclass;
-	if (my $f = _filter($rval, $ref && $class || "", $type, $ref, $pclass || "", $pself)) {
-	    if (my $v = $f->{replace_with}) {
-		$out = _dump($v, $name, $idx, 1, 1);
-		$dont_remember++;
-	    }
-	    if (defined(my $c = $f->{replace_class})) {
-		$class = $c;
-	    }
-	    if (my $c = $f->{comment}) {
-		$comment = $c;
-	    }
-	    if (defined(my $c = $f->{use_repr})) {
-		$out = $c;
-		$dont_remember++;
-	    }
-	    if (my $h = $f->{hide_keys}) {
-		if (ref($h) eq "ARRAY") {
-		    $hide_keys = sub {
-			for my $k (@$h) {
-			    return 1 if $k eq $_[0];
-			}
-			return 0;
-		    };
+	for my $filter (@FILTERS) {
+	    if (my $f = $filter->($rval, $ref && $class || "", $type, $ref,
+		    $pclass || "", $pself))
+	    {
+		if (my $v = $f->{replace_with}) {
+		    local @FILTERS;
+		    $out = _dump($v, $name, $idx, 1);
+		    $dont_remember++;
+		}
+		if (defined(my $c = $f->{replace_class})) {
+		    $class = $c;
+		}
+		if (my $c = $f->{comment}) {
+		    $comment = $c;
+		}
+		if (defined(my $c = $f->{use_repr})) {
+		    $out = $c;
+		    $dont_remember++;
+		}
+		if (my $h = $f->{hide_keys}) {
+		    if (ref($h) eq "ARRAY") {
+			$hide_keys = sub {
+			    for my $k (@$h) {
+				return 1 if $k eq $_[0];
+			    }
+			    return 0;
+			};
+		    }
 		}
 	    }
 	}
@@ -228,7 +208,7 @@ sub _dump
 	    }
 	    else {
 		delete $seen{$id} if $type eq "SCALAR";  # will be seen again shortly
-		my $val = _dump($$rval, $name, [@$idx, "\$"], 0, 0, $pclass, $pidx);
+		my $val = _dump($$rval, $name, [@$idx, "\$"], 0, $pclass, $pidx);
 		$out = $class ? "do{\\(my \$o = $val)}" : "\\$val";
 	    }
 	} else {
@@ -253,7 +233,7 @@ sub _dump
     elsif ($type eq "GLOB") {
 	if ($ref) {
 	    delete $seen{$id};
-	    my $val = _dump($$rval, $name, [@$idx, "*"], 0, 0, $pclass, $pidx);
+	    my $val = _dump($$rval, $name, [@$idx, "*"], 0, $pclass, $pidx);
 	    $out = "\\$val";
 	    if ($out =~ /^\\\*Symbol::/) {
 		$require{Symbol}++;
@@ -269,7 +249,7 @@ sub _dump
 		next if $k eq "SCALAR" && ! defined $$gval;  # always there
 		my $f = scalar @fixup;
 		push(@fixup, "RESERVED");  # overwritten after _dump() below
-		$gval = _dump($gval, $name, [@$idx, "*{$k}"], 0, 0, $pclass, $pidx);
+		$gval = _dump($gval, $name, [@$idx, "*{$k}"], 0, $pclass, $pidx);
 		$refcnt{$name}++;
 		my $gname = fullname($name, $idx);
 		$fixup[$f] = "$gname = $gval";  #XXX indent $gval
@@ -281,7 +261,7 @@ sub _dump
 	my $tied = tied_str(tied(@$rval));
 	my $i = 0;
 	for my $v (@$rval) {
-	    push(@vals, _dump($v, $name, [@$idx, "[$i]"], $tied, 0, $pclass, $pidx));
+	    push(@vals, _dump($v, $name, [@$idx, "[$i]"], $tied, $pclass, $pidx));
 	    $i++;
 	}
 	$out = "[" . format_list(1, $tied, @vals) . "]";
@@ -321,7 +301,7 @@ sub _dump
 	    $kstat_sum2 += length($key)*length($key);
 
 	    push(@keys, $key);
-	    push(@vals, _dump($$val, $name, [@$idx, "{$key}"], $tied, 0, $pclass, $pidx));
+	    push(@vals, _dump($$val, $name, [@$idx, "{$key}"], $tied, $pclass, $pidx));
 	}
 	my $nl = "";
 	my $klen_pad = 0;

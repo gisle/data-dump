@@ -1,0 +1,41 @@
+#!/usr/bin/perl -w
+
+use strict;
+use lib "lib";
+use Data::Dump;
+use LWP;
+
+push(@Data::Dump::FILTERS, sub {
+    my($rval, $class, $type, $ref, $pclass, $pidx) = @_;
+    if (0) {
+	# trace arguments
+	print "FFF [$class] [$type] [$pclass] [$pidx]\n";
+    }
+    if ($type eq "SCALAR" && $$rval && $$rval =~ /^\d+$/) {
+	return { replace_with => $$rval * 2, comment => "\n Used to be $$rval" };
+    }
+    if ($type eq "SCALAR" && $$rval) {
+	return { use_repr => "..." };
+    }
+    if (!$class && $type eq "SCALAR" && defined($$rval) && length($$rval) > 20) {
+	return { replace_with => substr($$rval, 0, 10) . "..." . substr($$rval, -5) }
+    }
+    if ($class && $class->isa("LWP::UserAgent")) {
+	#return { replace_class => "", comment => "LWP::UserAgent" }
+    }
+    if ($class && $class->isa("URI")) {
+	return { replace_with => "<$rval>", comment => "Actually a URI subclass" };
+    }
+    if ($class && $class->isa("HTTP::Message")) {
+	return { hide_keys => [qw(_request)] };
+    }
+    return;
+});
+
+
+
+my $ua = LWP::UserAgent->new;
+my $res = $ua->get("http://www.example.com");
+
+dd $ua;
+dd $res;
