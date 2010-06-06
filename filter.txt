@@ -1,6 +1,6 @@
 Filter function is called with:
 
-    ($rval, $class, $type, $ref, $pclass, $pidx)
+    ($ctx, $object)
 
 as argument.  If it wants something else than the regular processessing
 to happen it can return a hash describing the transformation.  Otherwise
@@ -8,12 +8,19 @@ it should return undef.
 
 The arguments are:
 
-    $rval:   reference to value visited
-    $class:  class of the visited value (or undef)
-    $type:   kind of object visited (SCALAR, GLOB, HASH,...)
-    $ref:    visiting a reference
-    $pclass: parent class (or undef)
-    $pidx:   $self expression showing element name based on $pclass
+    $ctx:    context object
+    $object: reference to object visited
+
+The context object provide this methods:
+
+    object
+    class
+    reftype
+    is_ref
+    parent_class
+    parent_self
+    isa
+    parent_isa
 
 The following elements can be used in the hash:
 

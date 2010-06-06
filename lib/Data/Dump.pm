@@ -13,7 +13,7 @@ $VERSION = "1.15";
 $DEBUG = 0;
 
 use overload ();
-use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64);
+use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS);
 
 $TRY_BASE64 = 50 unless defined $TRY_BASE64;
 
@@ -23,6 +23,8 @@ sub dump
     local %refcnt;
     local %require;
     local @fixup;
+
+    require Data::Dump::FilterContext if @FILTERS;
 
     my $name = "a";
     my @dump;
@@ -89,8 +91,6 @@ sub ddx {
     print $out;
 }
 
-our @FILTERS;
-
 sub _dump
 {
     my $ref  = ref $_[0];
@@ -118,10 +118,9 @@ sub _dump
     if (@FILTERS) {
 	my $pself = "";
 	$pself = fullname("self", [@$idx[$pidx..(@$idx - 1)]]) if $pclass;
+	my $ctx = Data::Dump::FilterContext->new($rval, $class, $type, $ref, $pclass, $pidx, $idx);
 	for my $filter (@FILTERS) {
-	    if (my $f = $filter->($rval, $ref && $class || "", $type, $ref,
-		    $pclass || "", $pself))
-	    {
+	    if (my $f = $filter->($ctx, $rval)) {
 		if (my $v = $f->{replace_with}) {
 		    local @FILTERS;
 		    $out = _dump($v, $name, $idx, 1);
