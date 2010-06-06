@@ -33,12 +33,12 @@ sub is_ref {
     return $self->{is_ref};
 }
 
-sub parent_class {
+sub container_class {
     my $self = shift;
     return $self->{pclass} || "";
 }
 
-sub parent_self {
+sub container_self {
     my $self = shift;
     return "" unless $self->{pclass};
     my $idx = $self->{idx};
@@ -51,7 +51,7 @@ sub isa {
     return $self->{class} && $self->{class}->isa($class);
 }
 
-sub parent_isa {
+sub container_isa {
     my($self, $class) = @_;
     return $self->{pclass} && $self->{pclass}->isa($class);
 }

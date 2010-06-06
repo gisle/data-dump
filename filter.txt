@@ -17,10 +17,10 @@ The context object provide this methods:
     class
     reftype
     is_ref
-    parent_class
-    parent_self
+    container_class
+    container_self
     isa
-    parent_isa
+    container_isa
 
 The following elements can be used in the hash:
 

@@ -7,7 +7,7 @@ use LWP;
 
 push(@Data::Dump::FILTERS, sub {
     my($ctx, $object) = @_;
-    print $ctx->parent_class, " ", $ctx->parent_self, "\n" if $ctx->parent_class;
+    print $ctx->container_class, " ", $ctx->container_self, "\n" if $ctx->container_class;
     if ($ctx->reftype eq "SCALAR" && $$object && $$object =~ /^\d+$/) {
 	return { replace_with => $$object * 2, comment => "\n Used to be $$object" };
     }
