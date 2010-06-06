@@ -7,7 +7,7 @@ use subs qq(dump);
 require Exporter;
 *import = \&Exporter::import;
 @EXPORT = qw(dd ddx);
-@EXPORT_OK = qw(dump pp quote);
+@EXPORT_OK = qw(dump pp dumpf quote);
 
 $VERSION = "1.15";
 $DEBUG = 0;
@@ -89,6 +89,11 @@ sub ddx {
     my $out = "$file:$line: " . dump(@_) . "\n";
     $out =~ s/^/# /gm;
     print $out;
+}
+
+sub dumpf {
+    require Data::Dump::Filtered;
+    goto &Data::Dump::Filtered::dump_filtered;
 }
 
 sub _dump
