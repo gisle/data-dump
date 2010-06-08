@@ -2,7 +2,7 @@
 
 use strict;
 use Test qw(plan ok);
-plan tests => 1;
+plan tests => 2;
 
 use Data::Dump qw(dumpf);
 
