@@ -46,7 +46,7 @@ sub container_self {
     return Data::Dump::fullname("self", [@$idx[$pidx..(@$idx - 1)]]);
 }
 
-sub isa {
+sub object_isa {
     my($self, $class) = @_;
     return $self->{class} && $self->{class}->isa($class);
 }

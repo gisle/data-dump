@@ -17,13 +17,13 @@ push(@Data::Dump::FILTERS, sub {
     if (!$ctx->class && $ctx->reftype eq "SCALAR" && defined($$object) && length($$object) > 20) {
 	return { replace_with => substr($$object, 0, 10) . "..." . substr($$object, -5) }
     }
-    if ($ctx->isa("LWP::UserAgent")) {
+    if ($ctx->object_isa("LWP::UserAgent")) {
 	return { replace_class => "", comment => "LWP::UserAgent" }
     }
-    if ($ctx->isa("URI")) {
+    if ($ctx->object_isa("URI")) {
 	return { replace_with => "<$object>", comment => "Actually a URI subclass" };
     }
-    if ($ctx->isa("HTTP::Message")) {
+    if ($ctx->object_isa("HTTP::Message")) {
 	return { hide_keys => [qw(_request)] };
     }
     return;
