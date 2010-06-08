@@ -594,6 +594,10 @@ it prints with "# " and mark the first line with the file and line
 number where it was called.  This is meant to be useful for debug
 printouts of state within programs.
 
+=item dumpf( ..., \&filter )
+
+Short hand for the dump_filtered() function of L<Data::Dump::Filtered>.
+
 =back
 
 
