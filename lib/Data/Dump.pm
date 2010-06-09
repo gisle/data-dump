@@ -301,11 +301,17 @@ sub _dump
 	    @orig_keys = sort { $a <=> $b } @orig_keys;
 	}
 
+	my $quote;
 	for my $key (@orig_keys) {
-	    my $val = \$rval->{$key};
-	    $key = quote($key) unless $key =~ /^-?[a-zA-Z_]\w*\z/ ||
-				      $key =~ /^-?[1-9]\d{0,8}\z/;
+	    next if $key =~ /^-?[a-zA-Z_]\w*\z/;
+	    next if $key =~ /^-?[1-9]\d{0,8}\z/;
+	    $quote++;
+	    last;
+	}
 
+	for my $key (@orig_keys) {
+	    my $val = \$rval->{$key};  # capture value before we modify $key
+	    $key = quote($key) if $quote;
 	    $kstat_max = length($key) if length($key) > $kstat_max;
 	    $kstat_sum += length($key);
 	    $kstat_sum2 += length($key)*length($key);

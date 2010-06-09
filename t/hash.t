@@ -2,7 +2,7 @@
 
 use strict;
 use Test;
-plan tests => 8;
+plan tests => 9;
 
 use Data::Dump qw(dump);
 
@@ -31,3 +31,4 @@ ok(dump({a => 1, foo => 2, bar => $DOTS, baz => $DOTS})."\n", <<EOT);
   foo => 2,
 }
 EOT
+ok(dump({a => 1, "b-z" => 2}), qq({ "a" => 1, "b-z" => 2 }));
