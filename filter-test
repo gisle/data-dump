@@ -5,7 +5,8 @@ use lib "lib";
 use Data::Dump;
 use LWP;
 
-push(@Data::Dump::FILTERS, sub {
+use Data::Dump::Filtered;
+Data::Dump::Filtered::add_filter(sub {
     my($ctx, $object) = @_;
     print $ctx->container_class, " ", $ctx->container_self, "\n" if $ctx->container_class;
     if ($ctx->is_scalar && $$object && $$object =~ /^\d+$/) {
