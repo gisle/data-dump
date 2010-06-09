@@ -295,7 +295,7 @@ sub _dump
 	}
 
 	if ($text_keys) {
-	    @orig_keys = sort @orig_keys;
+	    @orig_keys = sort { lc($a) cmp lc($b) } @orig_keys;
 	}
 	else {
 	    @orig_keys = sort { $a <=> $b } @orig_keys;

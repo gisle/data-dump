@@ -22,8 +22,8 @@ ok(dump({supercalifragilisticexpialidocious => 1, a => 2, b => $DOTS})."\n", <<E
   supercalifragilisticexpialidocious => 1,
 }
 EOT
-ok(dump({aa => 1, B => 2}), "{ B => 2, aa => 1 }");
-ok(dump({a => 1, foo => 2, bar => $DOTS, baz => $DOTS})."\n", <<EOT);
+ok(dump({aa => 1, B => 2}), "{ aa => 1, B => 2 }");
+ok(dump({a => 1, bar => $DOTS, baz => $DOTS, foo => 2 })."\n", <<EOT);
 {
   a   => 1,
   bar => "$DOTS",
