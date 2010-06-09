@@ -4,16 +4,16 @@ use Data::Dump ();
 use Carp ();
 
 use base 'Exporter';
-our @EXPORT_OK = qw(add_filter remove_filter dump_filtered);
+our @EXPORT_OK = qw(add_dump_filter remove_dump_filter dump_filtered);
 
-sub add_filter {
+sub add_dump_filter {
     my $filter = shift;
     die unless ref($filter) eq "CODE";
     push(@Data::Dump::FILTERS, $filter);
     return $filter;
 }
 
-sub remove_filter {
+sub remove_dump_filter {
     my $filter = shift;
     @Data::Dump::FILTERS = grep $_ ne $filter, @Data::Dump::FILTERS;
 }
@@ -39,7 +39,7 @@ The following functions are provided:
 
 =over
 
-=item add_filter( \&filter )
+=item add_dump_filter( \&filter )
 
 This registers a filter function to be used by the regular Data::Dump::dump()
 function.  By default no filters are active.
@@ -47,7 +47,7 @@ function.  By default no filters are active.
 Since registering filters has a global effect is might be more appropriate
 to use the dump_filtered() function instead.
 
-=item remove_filter( \&filter )
+=item remove_dump_filter( \&filter )
 
 Unregister the given callback function as filter callback.
 This undos the effect of L<add_filter>.
