@@ -61,10 +61,19 @@ this interface is invoked.
 =head2 Filter callback
 
 A filter callback is a function that will be invoked with 2 arguments;
-a context object and reference to the object currently visited.
+a context object and reference to the object currently visited.  The return
+value should be a hash reference or C<undef>.
 
     sub filter_callback {
         my($ctx, $object) = @_;
+	...
+	return { ... }
+    }
+
+If the filter callback returns C<undef> (or nothing) then normal
+processing and formatting of the visited object happens.
+If the filter callback returns a hash it might replace
+or annotate the representation of the current object.
 
 The context object provide methods that can be used to determine what kind of
 object is currently visited and where it's located.  The context object has the
@@ -111,40 +120,40 @@ subclass.
 
 =back
 
-The callback return value determine how the visited object is dumped.  If
-C<undef> is returned, then the object is dumped in the default way.  Otherwise
-the return value should be a hash reference with the following elements:
+The following elements has significance in the returned hash:
 
+=over
 
-The following elements can be used in the hash:
+=item replace_with => $value
 
-replace_with => $value
+dump the given value instead of the one passed in as $object
 
-    dump the given value instead of the one passed in as $rval
+=item use_repr => $string
 
-use_repr => $string
+incorporate the given string as the representation for the
+current value
 
-    incorporate the given string as the representation for the
-    current value
+=item comment => $comment
 
-comment => $comment
+prefix the value with the given comment string
 
-    prefix the value with the given comment string
+=item replace_class => $class
 
-replace_class => $class
+make it look as if the current object is of the given $class
+instead of the class it really has.  The internals of the object
+is dumped in the regular way.  The $class can be them empty string
+to make Data::Dump pretend the object wasn't blessed at all.
 
-    make it look as if the current object is of the given $class
-    instead of the class it really has.  The internals of the object
-    is dumped in the regular way.  The $class can be them empty string
-    to make Data::Dump pretend the object wasn't blessed at all.
+=item hide_keys => ['key1', 'key2',...]
 
-hide_keys => ['key1', 'key2',...]
-hide_keys => \&code
+=item hide_keys => \&code
 
-    If the $rval is a hash dump is as normal but pretend that the
-    listed keys did not exist.  If the argument is a funciton then
-    the function is called to determine if the given key should be
-    hidden.
+If the $object is a hash dump is as normal but pretend that the
+listed keys did not exist.  If the argument is a funciton then
+the function is called to determine if the given key should be
+hidden.
+
+=back
 
 =head1 SEE ALSO
 
