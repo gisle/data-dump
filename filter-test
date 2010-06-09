@@ -8,10 +8,10 @@ use LWP;
 push(@Data::Dump::FILTERS, sub {
     my($ctx, $object) = @_;
     print $ctx->container_class, " ", $ctx->container_self, "\n" if $ctx->container_class;
-    if ($ctx->reftype eq "SCALAR" && $$object && $$object =~ /^\d+$/) {
+    if ($ctx->is_scalar && $$object && $$object =~ /^\d+$/) {
 	return { replace_with => $$object * 2, comment => "\n Used to be $$object" };
     }
-    if ($ctx->reftype eq "SCALAR" && $$object) {
+    if ($ctx->is_scalar && $$object) {
 	return { use_repr => "..." };
     }
     if (!$ctx->class && $ctx->reftype eq "SCALAR" && defined($$object) && length($$object) > 20) {

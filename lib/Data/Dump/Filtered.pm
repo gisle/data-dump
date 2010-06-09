@@ -62,7 +62,7 @@ this interface is invoked.
 
 A filter callback is a function that will be invoked with 2 arguments;
 a context object and reference to the object currently visited.  The return
-value should be a hash reference or C<undef>.
+value should either be a hash reference or C<undef>.
 
     sub filter_callback {
         my($ctx, $object) = @_;
@@ -74,6 +74,8 @@ If the filter callback returns C<undef> (or nothing) then normal
 processing and formatting of the visited object happens.
 If the filter callback returns a hash it might replace
 or annotate the representation of the current object.
+
+=head2 Filter context
 
 The context object provide methods that can be used to determine what kind of
 object is currently visited and where it's located.  The context object has the
@@ -99,6 +101,27 @@ Returns what kind of object this is.  It's a string like "SCALAR",
 
 Returns true if a reference was provided.
 
+=item $ctx->is_blessed
+
+Returns true if the object is blessed.  Actually, this is just an alias
+for C<< $ctx->class >>.
+
+=item $ctx->is_array
+
+Returns true if the object is an array
+
+=item $ctx->is_hash
+
+Returns true if the object is a hash
+
+=item $ctx->is_scalar
+
+Returns true if the object is a scalar (a string or a number)
+
+=item $ctx->is_code
+
+Returns true if the object is a function (aka subroutine)
+
 =item $ctx->container_class
 
 Returns the class of the innnermost container that contains this object.
@@ -119,6 +142,8 @@ Returns TRUE if the innermost container is of the given class or is of a
 subclass.
 
 =back
+
+=head2 Filter return hash
 
 The following elements has significance in the returned hash:
 

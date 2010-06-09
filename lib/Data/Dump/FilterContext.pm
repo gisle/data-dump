@@ -23,9 +23,31 @@ sub class {
     return $self->{class} || "";
 }
 
+*is_blessed = \&class;
+
 sub reftype {
     my $self = shift;
-    return $self->{reftype} || "";
+    return $self->{reftype};
+}
+
+sub is_scalar {
+    my $self = shift;
+    return $self->{reftype} eq "SCALAR";
+}
+
+sub is_array {
+    my $self = shift;
+    return $self->{reftype} eq "ARRAY";
+}
+
+sub is_hash {
+    my $self = shift;
+    return $self->{reftype} eq "HASH";
+}
+
+sub is_code {
+    my $self = shift;
+    return $self->{reftype} eq "CODE";
 }
 
 sub is_ref {
