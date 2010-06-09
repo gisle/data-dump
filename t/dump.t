@@ -2,12 +2,13 @@
 
 use strict;
 use Test qw(plan ok);
-plan tests => 23;
+plan tests => 24;
 
 use Data::Dump qw(dump);
 
 ok(dump(), "()");
 ok(dump("abc"), qq("abc"));
+ok(dump("1\n"), qq("1\\n"));
 ok(dump(undef), "undef");
 ok(dump(0), "0");
 ok(dump(1234), "1234");
