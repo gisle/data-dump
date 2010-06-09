@@ -1,6 +1,7 @@
 package Data::Dump::Filtered;
 
-use Data::Dump;
+use Data::Dump ();
+use Carp ();
 
 sub add_filter {
     my $filter = shift;
@@ -16,9 +17,10 @@ sub remove_filter {
 
 sub dump_filtered {
     my $filter = pop;
-    die unless ref($filter) eq "CODE";
-
-    local @Data::Dump::FILTERS = ($filter);
+    if (defined($filter) && ref($filter) ne "CODE") {
+	Carp::croak("Last argument to dump_filtered must be undef or a code reference");
+    }
+    local @Data::Dump::FILTERS = ($filter ? $filter : ());
     return &Data::Dump::dump;
 }
 
@@ -47,14 +49,16 @@ to use the dump_filtered() function instead.
 Unregister the given callback function as filter callback.
 This undos the effect of L<add_filter>.
 
-=item dump_filtered(...., \&filter )
+=item dump_filtered(..., \&filter )
 
 Works like Data::Dump::dump(), but the last argument should
 be a filter callback function.  As objects are visisted the
 filter callback is invoked at it might influence how objects are dumped.
 
 Any filters registered with L<add_filter()> are ignored when
-this interface is invoked.
+this interface is invoked.  Actually, passing C<undef> as \&filter
+is allowed and C<< dump_filtered(..., undef) >> is the official way to
+force unfiltered dumps.
 
 =back
 
