@@ -3,6 +3,9 @@ package Data::Dump::Filtered;
 use Data::Dump ();
 use Carp ();
 
+use base 'Exporter';
+our @EXPORT_OK = qw(add_filter remove_filter dump_filtered);
+
 sub add_filter {
     my $filter = shift;
     die unless ref($filter) eq "CODE";
