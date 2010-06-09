@@ -13,7 +13,7 @@ sub new {
     }, $class;
 }
 
-sub object {
+sub object_ref {
     my $self = shift;
     return $self->{object};
 }

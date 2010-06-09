@@ -9,19 +9,19 @@ push(@Data::Dump::FILTERS, sub {
     my($ctx, $object) = @_;
     print $ctx->container_class, " ", $ctx->container_self, "\n" if $ctx->container_class;
     if ($ctx->is_scalar && $$object && $$object =~ /^\d+$/) {
-	return { replace_with => $$object * 2, comment => "\n Used to be $$object" };
+	return { object => $$object * 2, comment => "\n Used to be $$object" };
     }
     if ($ctx->is_scalar && $$object) {
-	return { use_repr => "..." };
+	return { dump => "..." };
     }
     if (!$ctx->class && $ctx->reftype eq "SCALAR" && defined($$object) && length($$object) > 20) {
-	return { replace_with => substr($$object, 0, 10) . "..." . substr($$object, -5) }
+	return { object => substr($$object, 0, 10) . "..." . substr($$object, -5) }
     }
     if ($ctx->object_isa("LWP::UserAgent")) {
-	return { replace_class => "", comment => "LWP::UserAgent" }
+	return { bless => "", comment => "LWP::UserAgent" }
     }
     if ($ctx->object_isa("URI")) {
-	return { replace_with => "<$object>", comment => "Actually a URI subclass" };
+	return { object => "<$object>", comment => "Actually a URI subclass" };
     }
     if ($ctx->object_isa("HTTP::Message")) {
 	return { hide_keys => [qw(_request)] };

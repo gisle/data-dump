@@ -126,18 +126,18 @@ sub _dump
 	my $ctx = Data::Dump::FilterContext->new($rval, $class, $type, $ref, $pclass, $pidx, $idx);
 	for my $filter (@FILTERS) {
 	    if (my $f = $filter->($ctx, $rval)) {
-		if (my $v = $f->{replace_with}) {
+		if (my $v = $f->{object}) {
 		    local @FILTERS;
 		    $out = _dump($v, $name, $idx, 1);
 		    $dont_remember++;
 		}
-		if (defined(my $c = $f->{replace_class})) {
+		if (defined(my $c = $f->{bless})) {
 		    $class = $c;
 		}
 		if (my $c = $f->{comment}) {
 		    $comment = $c;
 		}
-		if (defined(my $c = $f->{use_repr})) {
+		if (defined(my $c = $f->{dump})) {
 		    $out = $c;
 		    $dont_remember++;
 		}

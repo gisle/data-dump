@@ -65,7 +65,7 @@ a context object and reference to the object currently visited.  The return
 value should either be a hash reference or C<undef>.
 
     sub filter_callback {
-        my($ctx, $object) = @_;
+        my($ctx, $object_ref) = @_;
 	...
 	return { ... }
     }
@@ -83,7 +83,7 @@ following interface:
 
 =over
 
-=item $ctx->object
+=item $ctx->object_ref
 
 Alternative way to obtain a reference to the current object
 
@@ -149,23 +149,24 @@ The following elements has significance in the returned hash:
 
 =over
 
-=item replace_with => $value
-
-dump the given value instead of the one passed in as $object
-
-=item use_repr => $string
+=item dump => $string
 
 incorporate the given string as the representation for the
 current value
+
+=item object => $value
+
+dump the given value instead of the one visted and passed in as $object.
+Basically the same as specifying C<< dump => Data::Dump::dump($value) >>.
 
 =item comment => $comment
 
 prefix the value with the given comment string
 
-=item replace_class => $class
+=item bless => $class
 
 make it look as if the current object is of the given $class
-instead of the class it really has.  The internals of the object
+instead of the class it really has (if any).  The internals of the object
 is dumped in the regular way.  The $class can be them empty string
 to make Data::Dump pretend the object wasn't blessed at all.
 
