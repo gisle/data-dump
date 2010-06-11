@@ -351,7 +351,7 @@ sub _dump
 	while (@keys) {
 	    my $key = shift @keys;
 	    my $val = shift @vals;
-	    my $pad = " " x ($klen_pad + 6);
+	    my $pad = " " x ($klen_pad ? $klen_pad + 6 : 2);
 	    $val =~ s/\n/\n$pad/gm;
 	    $key = " $key" . " " x ($klen_pad - length($key)) if $nl;
 	    $out .= " $key => $val,$nl";
