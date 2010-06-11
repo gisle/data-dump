@@ -432,17 +432,20 @@ sub format_list
     if (@_ > 3) {
 	# can we use range operator to shorten the list?
 	my $i = 0;
-	my $j = $i + 1;
-	my $v = $_[$i];
-	while ($j < @_) {
-	    # XXX allow string increment too?
-	    last unless $v eq "0" || $v =~ /^-?[1-9]\d{0,9}\z/;
-	    $v++;
-	    last if $_[$j] ne $v;
-	    $j++;
-	}
-	if ($j - $i > 3) {
-	    splice(@_, $i, $j - $i, "$_[$i] .. $_[$j-1]");
+	while ($i < @_) {
+	    my $j = $i + 1;
+	    my $v = $_[$i];
+	    while ($j < @_) {
+		# XXX allow string increment too?
+		last unless $v eq "0" || $v =~ /^-?[1-9]\d{0,9}\z/;
+		$v++;
+		last if $_[$j] ne $v;
+		$j++;
+	    }
+	    if ($j - $i > 3) {
+		splice(@_, $i, $j - $i, "$_[$i] .. $_[$j-1]");
+	    }
+	    $i++;
 	}
     }
     my $tmp = "@_";

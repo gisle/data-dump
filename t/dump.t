@@ -2,7 +2,7 @@
 
 use strict;
 use Test qw(plan ok);
-plan tests => 27;
+plan tests => 28;
 
 use Data::Dump qw(dump);
 
@@ -21,6 +21,7 @@ ok(dump(1..2), "(1, 2)");
 ok(dump(1..3), "(1, 2, 3)");
 ok(dump(1..4), "(1 .. 4)");
 ok(dump(1..5,6,8,9), "(1 .. 6, 8, 9)");
+ok(dump(1..5,4..8), "(1 .. 5, 4 .. 8)");
 ok(dump([-2..2]), "[-2 .. 2]");
 ok(dump({ a => 1, b => 2 }), "{ a => 1, b => 2 }");
 ok(dump({ 1 => 1, 2 => 1, 10 => 1 }), "{ 1 => 1, 2 => 1, 10 => 1 }");
