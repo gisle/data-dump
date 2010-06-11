@@ -441,7 +441,6 @@ sub format_list
 	    last if $_[$j] ne $v;
 	    $j++;
 	}
-	print "[@_] $i $j\n";
 	if ($j - $i > 3) {
 	    splice(@_, $i, $j - $i, "$_[$i] .. $_[$j-1]");
 	}
