@@ -437,8 +437,17 @@ sub format_list
 	    my $v = $_[$i];
 	    while ($j < @_) {
 		# XXX allow string increment too?
-		last unless $v eq "0" || $v =~ /^-?[1-9]\d{0,9}\z/;
-		$v++;
+		if ($v eq "0" || $v =~ /^-?[1-9]\d{0,9}\z/) {
+		    $v++;
+		}
+		elsif ($v =~ /^"([A-Za-z]{1,3}\d*)"\z/) {
+		    $v = $1;
+		    $v++;
+		    $v = qq("$v");
+		}
+		else {
+		    last;
+		}
 		last if $_[$j] ne $v;
 		$j++;
 	    }
