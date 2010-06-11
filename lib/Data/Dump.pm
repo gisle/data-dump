@@ -360,7 +360,7 @@ sub _dump
 	$out .= "}";
     }
     elsif ($type eq "CODE") {
-	$out = 'sub { "???" }';
+	$out = 'sub { ... }';
     }
     else {
 	warn "Can't handle $type data";
@@ -619,8 +619,9 @@ can modify how the objects are dumped.
 
 =head1 LIMITATIONS
 
-Code references will be dumped as 'sub { "???" }'. Thus, C<eval>ing them will
-not reproduce the original routine.
+Code references will be dumped as C<< sub { ... } >>. Thus, C<eval>ing them will
+not reproduce the original routine.  The C<...>-operator used will also require
+perl-5.12 or better to be evaled.
 
 If you forget to explicitly import the C<dump> function, your code will
 core dump. That's because you just called the builtin C<dump> function

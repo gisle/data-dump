@@ -54,4 +54,4 @@ EOT
 
 # stranger stuff
 ok(dump({ a => \&Data::Dump::dump, aa => do {require Symbol; Symbol::gensym()}}),
-   "do {\n  require Symbol;\n  { a => sub { \"???\" }, aa => Symbol::gensym() };\n}");
+   "do {\n  require Symbol;\n  { a => sub { ... }, aa => Symbol::gensym() };\n}");
