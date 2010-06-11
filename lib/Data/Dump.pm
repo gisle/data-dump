@@ -429,6 +429,23 @@ sub format_list
     my $paren = shift;
     my $comment = shift;
     my $indent_lim = $paren ? 0 : 1;
+    if (@_ > 3) {
+	# can we use range operator to shorten the list?
+	my $i = 0;
+	my $j = $i + 1;
+	my $v = $_[$i];
+	while ($j < @_) {
+	    # XXX allow string increment too?
+	    last unless $v eq "0" || $v =~ /^-?[1-9]\d{0,9}\z/;
+	    $v++;
+	    last if $_[$j] ne $v;
+	    $j++;
+	}
+	print "[@_] $i $j\n";
+	if ($j - $i > 3) {
+	    splice(@_, $i, $j - $i, "$_[$i] .. $_[$j-1]");
+	}
+    }
     my $tmp = "@_";
     if ($comment || (@_ > $indent_lim && (length($tmp) > 60 || $tmp =~ /\n/))) {
 	my @elem = @_;
