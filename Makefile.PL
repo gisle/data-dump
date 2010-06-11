@@ -8,10 +8,19 @@ WriteMakefile(
    AUTHOR => 'Gisle Aas <gisle@activestate.com>',
    LICENSE => "perl",
    MIN_PERL_VERSION => 5.006,
+   PREREQ_PM => {
+       Symbol => 0,
+   },
    META_MERGE => {
        resources => {
 	   repository => 'http://github.com/gisle/data-dump',
        },
+       recommends => {
+	   'MIME::Base64' => 0,
+       },
+   },
+   BUILD_REQUIRES => {
+       Test => 0,
    },
 );
 
