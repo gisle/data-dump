@@ -50,12 +50,12 @@ to use the dump_filtered() function instead.
 =item remove_dump_filter( \&filter )
 
 Unregister the given callback function as filter callback.
-This undos the effect of L<add_filter>.
+This undoes the effect of L<add_filter>.
 
 =item dump_filtered(..., \&filter )
 
 Works like Data::Dump::dump(), but the last argument should
-be a filter callback function.  As objects are visisted the
+be a filter callback function.  As objects are visited the
 filter callback is invoked at it might influence how objects are dumped.
 
 Any filters registered with L<add_filter()> are ignored when
@@ -131,13 +131,13 @@ Returns true if the object is a function (aka subroutine)
 
 =item $ctx->container_class
 
-Returns the class of the innnermost container that contains this object.
+Returns the class of the innermost container that contains this object.
 Returns "" if there is no blessed container.
 
 =item $ctx->container_self
 
 Returns an textual expression relative to the container object that names this
-object.  The variable C<$self> in this expresion is the container itself.
+object.  The variable C<$self> in this expression is the container itself.
 
 =item $ctx->object_isa( $class )
 
@@ -163,7 +163,7 @@ current value
 
 =item object => $value
 
-dump the given value instead of the one visted and passed in as $object.
+dump the given value instead of the one visited and passed in as $object.
 Basically the same as specifying C<< dump => Data::Dump::dump($value) >>.
 
 =item comment => $comment
@@ -174,7 +174,7 @@ prefix the value with the given comment string
 
 make it look as if the current object is of the given $class
 instead of the class it really has (if any).  The internals of the object
-is dumped in the regular way.  The $class can be them empty string
+is dumped in the regular way.  The $class can be the empty string
 to make Data::Dump pretend the object wasn't blessed at all.
 
 =item hide_keys => ['key1', 'key2',...]
@@ -182,7 +182,7 @@ to make Data::Dump pretend the object wasn't blessed at all.
 =item hide_keys => \&code
 
 If the $object is a hash dump is as normal but pretend that the
-listed keys did not exist.  If the argument is a funciton then
+listed keys did not exist.  If the argument is a function then
 the function is called to determine if the given key should be
 hidden.
 
