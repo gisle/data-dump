@@ -522,17 +522,17 @@ Data::Dump - Pretty printing of data structures
 
 =head1 SYNOPSIS
 
- use Data::Dump qw(dump ddx);
+ use Data::Dump qw(dump);
 
  $str = dump(@list);
  @copy_of_list = eval $str;
 
  # or use it for easy debug printout
- ddx localtime;
+ use Data::Dump; dd localtime;
 
 =head1 DESCRIPTION
 
-This module provide functions that takes a list of values as their
+This module provide a few functions that traverse their
 argument and produces a string as its result.  The string contains
 Perl code that, when C<eval>ed, produces a deep copy of the original
 arguments.
@@ -545,7 +545,7 @@ that is easy to read.  Example:
 
 Produces:
 
-    (1, [2, 3], { 4 => 5 })
+    "(1, [2, 3], { 4 => 5 })"
 
 If you dump just a little data, it is output on a single line. If
 you dump data that is more complex or there is a lot of it, line breaks
@@ -591,7 +591,8 @@ Returns a quoted version of the provided string.
 
 It differs from C<dump($string)> in that it will quote even numbers and
 not try to come up with clever expressions that might shorten the
-output.
+output.  If a non-scalar argument is provided then it's just stringified
+instead of traversed.
 
 =item dd( ... )
 
@@ -608,15 +609,18 @@ printouts of state within programs.
 
 =item dumpf( ..., \&filter )
 
-Short hand for the dump_filtered() function of L<Data::Dump::Filtered>.
+Short hand for calling the dump_filtered() function of L<Data::Dump::Filtered>.
+This works like dump(), but the last argument should be a filter callback
+function.  As objects are visited the filter callback is invoked and it
+can modify how the objects are dumped.
 
 =back
 
 
 =head1 LIMITATIONS
 
-Code references will be displayed as simply 'sub { "???" }' when
-dumped. Thus, C<eval>ing them will not reproduce the original routine.
+Code references will be dumped as 'sub { "???" }'. Thus, C<eval>ing them will
+not reproduce the original routine.
 
 If you forget to explicitly import the C<dump> function, your code will
 core dump. That's because you just called the builtin C<dump> function
@@ -639,7 +643,8 @@ returns C<(1, 2, 3, 4, 5)>.
 
 =head1 SEE ALSO
 
-L<Data::Dumper>, L<Storable>
+L<Data::Dump::Filtered>, L<Data::Dump::Trace>, L<Data::Dumper>, L<JSON>,
+L<Storable>
 
 =head1 AUTHORS
 
