@@ -8,7 +8,9 @@ our @EXPORT_OK = qw(add_dump_filter remove_dump_filter dump_filtered);
 
 sub add_dump_filter {
     my $filter = shift;
-    die unless ref($filter) eq "CODE";
+    unless (ref($filter) eq "CODE") {
+	Carp::croak("add_dump_filter argument must be a code reference");
+    }
     push(@Data::Dump::FILTERS, $filter);
     return $filter;
 }
