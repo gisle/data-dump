@@ -669,8 +669,8 @@ C<Data::Dumper>.  No OO interface is available and there are no
 configuration options to worry about (yet :-).  The other benefit is
 that the dump produced does not try to set any variables.  It only
 returns what is needed to produce a copy of the arguments.  This means
-that C<dump("foo")> simply returns C<"foo">, and C<dump(1..5)> simply
-returns C<(1, 2, 3, 4, 5)>.
+that C<dump("foo")> simply returns C<'"foo"'>, and C<dump(1..3)> simply
+returns C<'(1, 2, 3)'>.
 
 =head1 SEE ALSO
 
