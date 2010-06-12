@@ -1,3 +1,24 @@
+2010-06-12  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.17
+
+   Fix dump of "1\n" (the newline was lost) [RT#56595]
+
+   Start using the range operator to shorten list dumps.
+   For instance dump(1,2,3,4,5) now returns '(1 .. 5)'.
+
+   CODE references now dumped as 'sub { ... }'.
+   Potetential compatibility issue as perl-5.12 or better
+   to eval such strings.
+
+   Fix how multiline hash values are indented.
+
+   Make indentation configurable
+
+   Improved documentation
+
+
+
 2010-06-09  Gisle Aas <gisle@ActiveState.com>
 
    Release 1.16
