@@ -13,9 +13,10 @@ $VERSION = "1.16";
 $DEBUG = 0;
 
 use overload ();
-use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS);
+use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS $INDENT);
 
 $TRY_BASE64 = 50 unless defined $TRY_BASE64;
+$INDENT = "  " unless defined $INDENT;
 
 sub dump
 {
@@ -66,7 +67,7 @@ sub dump
 
     if (%refcnt || %require) {
 	$out .= ";\n";
-	$out =~ s/^/  /gm;  # indent
+	$out =~ s/^/$INDENT/gm;
 	$out = "do {\n$out}";
     }
 
@@ -347,14 +348,15 @@ sub _dump
 	    }
 	}
 	$out = "{$nl";
-	$out .= "  # $tied$nl" if $tied;
+	$out .= "$INDENT# $tied$nl" if $tied;
 	while (@keys) {
 	    my $key = shift @keys;
 	    my $val = shift @vals;
-	    my $pad = " " x ($klen_pad ? $klen_pad + 6 : 2);
-	    $val =~ s/\n/\n$pad/gm;
-	    $key = " $key" . " " x ($klen_pad - length($key)) if $nl;
-	    $out .= " $key => $val,$nl";
+	    my $vpad = $INDENT . (" " x ($klen_pad ? $klen_pad + 4 : 0));
+	    $val =~ s/\n/\n$vpad/gm;
+	    my $kpad = $nl ? $INDENT : " ";
+	    $key .= " " x ($klen_pad - length($key)) if $nl;
+	    $out .= "$kpad$key => $val,$nl";
 	}
 	$out =~ s/,$/ / unless $nl;
 	$out .= "}";
@@ -460,8 +462,8 @@ sub format_list
     my $tmp = "@_";
     if ($comment || (@_ > $indent_lim && (length($tmp) > 60 || $tmp =~ /\n/))) {
 	my @elem = @_;
-	for (@elem) { s/^/  /gm; }   # indent
-	return "\n" . ($comment ? "  # $comment\n" : "") .
+	for (@elem) { s/^/$INDENT/gm; }
+	return "\n" . ($comment ? "$INDENT# $comment\n" : "") .
                join(",\n", @elem, "");
     } else {
 	return join(", ", @_);
