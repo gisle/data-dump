@@ -9,7 +9,7 @@
 
    CODE references now dumped as 'sub { ... }'.
    Potetential compatibility issue as perl-5.12 or better
-   to eval such strings.
+   is needed to eval such strings.
 
    Fix how multiline hash values are indented.
 
