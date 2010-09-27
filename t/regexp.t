@@ -1,6 +1,7 @@
 #!perl -w
 
-print "1..1\n";
+use Test;
+plan tests => 1;
 
 use Data::Dump;
 
@@ -19,7 +20,7 @@ $a = {
    i => qr*/|,:#*,
 };
 
-print "not " unless Data::Dump::dump($a) . "\n" eq <<'EOT'; print "ok 1\n";
+ok(Data::Dump::dump($a) . "\n", <<'EOT');
 {
   a => qr/Foo/,
   b => qr|abc/|si,
@@ -35,5 +36,3 @@ print "not " unless Data::Dump::dump($a) . "\n" eq <<'EOT'; print "ok 1\n";
   i => qr/\/|,:#/,
 }
 EOT
-
-#print Data::Dump::dump($a), "\n";
