@@ -364,6 +364,9 @@ sub _dump
     elsif ($type eq "CODE") {
 	$out = 'sub { ... }';
     }
+    elsif ($type eq "VSTRING") {
+        $out = sprintf +($ref ? '\v%vd' : 'v%vd'), $$rval;
+    }
     else {
 	warn "Can't handle $type data";
 	$out = "'#$type#'";
