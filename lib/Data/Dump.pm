@@ -504,6 +504,7 @@ sub str {
       # 17 bytes (not counting any require statement needed).
       # But on the other hand, hex is much more readable.
       if ($TRY_BASE64 && length($_[0]) > $TRY_BASE64 &&
+	  (defined &utf8::is_utf8 && !utf8::is_utf8($_[0])) &&
 	  eval { require MIME::Base64 })
       {
 	  $require{"MIME::Base64"}++;
