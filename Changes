@@ -1,3 +1,15 @@
+2010-10-18  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.18
+
+   Don't downgrade is_utf8-strings with MIME::Base64 [RT#60103]
+
+   Deal with the perl-5.13 (?^:...) regex construct [RT#61552]
+
+   croak on bad add_dump_filter argument
+
+
+
 2010-06-12  Gisle Aas <gisle@ActiveState.com>
 
    Release 1.17
