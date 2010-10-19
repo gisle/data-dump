@@ -8,7 +8,7 @@ BEGIN {
 }
 
 use strict;
-use Test qw(plan ok);
+use Test qw(plan ok skip);
 
 plan tests => 8;
 
@@ -25,5 +25,6 @@ $a = "";
 $a .= chr($_) for 128 .. 255;
 $a .= "\x{FFF}"; chop($a); # upgrade
 ok(utf8::is_utf8($a));
-ok(dump($a), 'pack("H*","' . join('', map sprintf("%02x", $_), 128..255). '")');
+skip($] < 5.010 ? "perl-5.10 required" : "",
+    dump($a), 'pack("H*","' . join('', map sprintf("%02x", $_), 128..255). '")');
 ok(utf8::is_utf8($a));

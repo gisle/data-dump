@@ -1,5 +1,12 @@
 #!perl -w
 
+BEGIN {
+    if ($] < 5.010) {
+	print "1..0 # Skipped: perl-5.10 required\n";
+	exit;
+    }
+}
+
 use strict;
 use Test;
 plan tests => 9;
