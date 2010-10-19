@@ -32,7 +32,7 @@ BEGIN {
         META_MERGE => 6.45,
         META_ADD => 6.45,
         MIN_PERL_VERSION => 6.48,
-        BUILD_REQUIRES => 6.45,
+        BUILD_REQUIRES => 6.56,
     );
     undef(*WriteMakefile);
     *WriteMakefile = sub {
