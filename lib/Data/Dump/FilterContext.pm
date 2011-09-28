@@ -78,4 +78,9 @@ sub container_isa {
     return $self->{pclass} && $self->{pclass}->isa($class);
 }
 
+sub depth {
+    my $self = shift;
+    return scalar @{$self->{idx}};
+}
+
 1;

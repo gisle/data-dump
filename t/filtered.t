@@ -2,7 +2,7 @@
 
 use strict;
 use Test qw(plan ok);
-plan tests => 37;
+plan tests => 39;
 
 use Data::Dump qw(dumpf);
 
@@ -30,6 +30,7 @@ ok(dumpf("foo", sub {
     ok(!$ctx->is_hash);
     ok( $ctx->is_scalar);
     ok(!$ctx->is_code);
+    ok($ctx->depth, 0);
     return;
 }), '"foo"');
 ok($cb_count, 1);
@@ -53,6 +54,7 @@ ok(dumpf(bless({ a => 1, b => bless {}, "Bar"}, "Foo"), sub {
     ok($ctx->is_hash);
     ok(!$ctx->is_scalar);
     ok(!$ctx->is_code);
+    ok($ctx->depth, 1);
     return;
 }) =~ /^bless\(.*, "Foo"\)\z/);
 ok($cb_count, 3);

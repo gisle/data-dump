@@ -150,6 +150,11 @@ Returns TRUE if the current object is of the given class or is of a subclass.
 Returns TRUE if the innermost container is of the given class or is of a
 subclass.
 
+=item $ctx->depth
+
+Returns how many levels deep have we recursed into the structure (from the
+original dump_filtered() arguments).
+
 =back
 
 =head2 Filter return hash
