@@ -27,6 +27,7 @@ use IO::Socket::INET;
 my $s = IO::Socket::INET->new(
     Listen => 1,
     Timeout => 5,
+    LocalAddr => '127.0.0.1',
 );
 $s = dump($s);
 print "$s\n";
