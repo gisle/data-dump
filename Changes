@@ -1,3 +1,14 @@
+2011-10-02  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.20
+
+   Add depth() method to FilterContext
+
+   Make dump($1) work [RT#63883]
+
+   Limit our temp listen socket to localhost [RT#63534]
+
+
 2010-10-19  Gisle Aas <gisle@ActiveState.com>
 
    Release 1.19
