@@ -106,11 +106,17 @@ sub _dump
     my($name, $idx, $dont_remember, $pclass, $pidx) = @_;
 
     my($class, $type, $id);
-    if (overload::StrVal($rval) =~ /^(?:([^=]+)=)?([A-Z]+)\(0x([^\)]+)\)$/) {
-	$class = $1;
-	$type  = $2;
-	$id    = $3;
-    } else {
+    my $strval = overload::StrVal($rval);
+    # Parse $strval without using regexps, in order not to clobber $1, $2,...
+    if ((my $i = index($strval, "=")) >= 0) {
+	$class = substr($strval, 0, $i);
+	$strval = substr($strval, $i+1);
+    }
+    if ((my $i = index($strval, "(0x")) >= 0) {
+	$type = substr($strval, 0, $i);
+	$id = substr($strval, $i + 2, -1);
+    }
+    else {
 	die "Can't parse " . overload::StrVal($rval);
     }
     if ($] < 5.008 && $type eq "SCALAR") {
