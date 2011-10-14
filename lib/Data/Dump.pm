@@ -232,8 +232,8 @@ sub _dump
 	    if (!defined $$rval) {
 		$out = "undef";
 	    }
-	    elsif ($$rval =~ /^-?[1-9]\d{0,9}\z/ || $$rval eq "0") {
-		$out = $$rval;
+	    elsif (my $v = "$$rval", $$rval =~ /^-?[1-9]\d{0,9}\z/ || $$rval eq "0") {
+		$out = $v;
 	    }
 	    else {
 		$out = str($$rval);

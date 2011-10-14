@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 4;
+use Test::More tests => 6;
 
 use Data::Dump qw/dump/;
 
@@ -11,6 +11,7 @@ if ("abc" =~ /(.+)/) {
 }
 
 if ("123" =~ /(.+)/) {
-    local $TODO = '$1 still modified by dump itself';
     is(dump($1), "123");
+    is(dump(\$1), '\123');
+    is(dump([$1]), '[123]');
 }
