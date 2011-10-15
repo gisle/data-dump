@@ -232,7 +232,13 @@ sub _dump
 	    if (!defined $$rval) {
 		$out = "undef";
 	    }
-	    elsif (my $v = "$$rval", $$rval =~ /^-?[1-9]\d{0,9}\z/ || $$rval eq "0") {
+	    elsif (my $v = substr($$rval, 0, 12), $$rval =~ /^-?[1-9]\d{0,9}\z/ || $$rval eq "0") {
+		# The assignment to $v above is required because the fact that we use
+		# a regexp here will actually modify $$rval if it happens to be an alias
+		# for one of the regexp special vars, like $1.  We use substr instead of
+		# regular stringification, just to make it cheaper in case the scalar
+		# we're dumping is huge.  The prefix length extracted must be longer
+		# than what the regexp might match for this code to be correct.
 		$out = $v;
 	    }
 	    else {
