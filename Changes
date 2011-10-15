@@ -1,3 +1,13 @@
+2011-10-15  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.21
+
+   Make dump($1) work when $1 was integer [RT#63883]
+
+   Dump floats without quoting
+
+
+
 2011-10-02  Gisle Aas <gisle@ActiveState.com>
 
    Release 1.20
