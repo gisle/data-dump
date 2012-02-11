@@ -2,7 +2,7 @@
 
 use strict;
 use Test qw(plan ok);
-plan tests => 33;
+plan tests => 34;
 
 use Data::Dump qw(dump);
 
@@ -64,3 +64,4 @@ EOT
 # stranger stuff
 ok(dump({ a => \&Data::Dump::dump, aa => do {require Symbol; Symbol::gensym()}}),
    "do {\n  require Symbol;\n  { a => sub { ... }, aa => Symbol::gensym() };\n}");
+ok(dump(bless{}, "foo=bar"), 'bless({}, "foo=bar")');

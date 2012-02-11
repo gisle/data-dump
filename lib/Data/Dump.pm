@@ -108,7 +108,7 @@ sub _dump
     my($class, $type, $id);
     my $strval = overload::StrVal($rval);
     # Parse $strval without using regexps, in order not to clobber $1, $2,...
-    if ((my $i = index($strval, "=")) >= 0) {
+    if ((my $i = rindex($strval, "=")) >= 0) {
 	$class = substr($strval, 0, $i);
 	$strval = substr($strval, $i+1);
     }
