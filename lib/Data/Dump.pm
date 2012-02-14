@@ -679,8 +679,8 @@ for the dump output.  The default is 50.  Set it to 0 to disable base64 dumps.
 
 =item $Data::Dump::NL
 
-Newline character. Defaults to "\n" but can be set to "" (for single-line dumps)
-or multiple newlines (for double-spaced dumps).
+Newline character. Defaults to "\n" but can be set to "" (for single-line
+dumps).
 
 =back
 
