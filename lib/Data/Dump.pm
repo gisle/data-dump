@@ -355,7 +355,7 @@ sub _dump
 	    }
 	}
 	$out = "{$nl";
-	$out .= "$INDENT# $tied$nl" if $tied;
+	$out .= "$INDENT# $tied$nl" if $tied && $NL =~ /\n/;
 	while (@keys) {
 	    my $key = shift @keys;
 	    my $val = shift @vals;

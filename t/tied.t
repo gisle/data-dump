@@ -4,7 +4,7 @@ use strict;
 use Test qw(plan ok);
 use Data::Dump qw(dump);
 
-plan tests => 4;
+plan tests => 6;
 
 {
     package MyTie;
@@ -54,6 +54,11 @@ ok(nl(dump(\%hash)), <<EOT);
   d => "vd",
 }
 EOT
+{
+    local $Data::Dump::NL = " ";
+    local $Data::Dump::INDENT = "";
+    ok(dump(\%hash), q|{ a => "va", b => "vb", c => "vc", d => "vd", }|);
+}
 
 ok(nl(dump(\@array)), <<EOT);
 [
@@ -61,6 +66,11 @@ ok(nl(dump(\@array)), <<EOT);
   "v0" .. "v3",
 ]
 EOT
+{
+    local $Data::Dump::NL = " ";
+    local $Data::Dump::INDENT = "";
+    ok(dump(\@array), q|[ "v0" .. "v3", ]|);
+}
 
 ok(nl(dump($scalar)), <<EOT);
 "v"
