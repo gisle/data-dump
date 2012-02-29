@@ -13,10 +13,11 @@ $VERSION = "1.21";
 $DEBUG = 0;
 
 use overload ();
-use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS $INDENT);
+use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 $NL @FILTERS $INDENT);
 
 $TRY_BASE64 = 50 unless defined $TRY_BASE64;
 $INDENT = "  " unless defined $INDENT;
+$NL = "\n" unless defined $NL;
 
 sub dump
 {
@@ -40,7 +41,7 @@ sub dump
     my $out = "";
     if (%require) {
 	for (sort keys %require) {
-	    $out .= "require $_;\n";
+	    $out .= "require $_;$NL";
 	}
     }
     if (%refcnt) {
@@ -48,12 +49,12 @@ sub dump
 	for (@dump) {
 	    my $name = $_->[0];
 	    if ($refcnt{$name}) {
-		$out .= "my \$$name = $_->[1];\n";
+		$out .= "my \$$name = $_->[1];$NL";
 		undef $_->[1];
 	    }
 	}
 	for (@fixup) {
-	    $out .= "$_;\n";
+	    $out .= "$_;$NL";
 	}
     }
 
@@ -66,28 +67,28 @@ sub dump
     $out .= ")" if $paren;
 
     if (%refcnt || %require) {
-	$out .= ";\n";
+	$out .= ";$NL";
 	$out =~ s/^/$INDENT/gm;
-	$out = "do {\n$out}";
+	$out = "do {$NL$out}";
     }
 
     #use Data::Dumper;   print Dumper(\%refcnt);
     #use Data::Dumper;   print Dumper(\%seen);
 
-    print STDERR "$out\n" unless defined wantarray;
+    print STDERR "$out$NL" unless defined wantarray;
     $out;
 }
 
 *pp = \&dump;
 
 sub dd {
-    print dump(@_), "\n";
+    print dump(@_), $NL;
 }
 
 sub ddx {
     my(undef, $file, $line) = caller;
     $file =~ s,.*[\\/],,;
-    my $out = "$file:$line: " . dump(@_) . "\n";
+    my $out = "$file:$line: " . dump(@_) . $NL;
     $out =~ s/^/# /gm;
     print $out;
 }
@@ -330,7 +331,7 @@ sub _dump
 	my $klen_pad = 0;
 	my $tmp = "@keys @vals";
 	if (length($tmp) > 60 || $tmp =~ /\n/ || $tied) {
-	    $nl = "\n";
+	    $nl = $NL;
 
 	    # Determine what padding to add
 	    if ($kstat_max < 4) {
@@ -354,7 +355,7 @@ sub _dump
 	    }
 	}
 	$out = "{$nl";
-	$out .= "$INDENT# $tied$nl" if $tied;
+	$out .= "$INDENT# $tied$nl" if $tied && $NL =~ /\n/;
 	while (@keys) {
 	    my $key = shift @keys;
 	    my $val = shift @vals;
@@ -381,7 +382,7 @@ sub _dump
     if ($class && $ref) {
 	$out = "bless($out, " . quote($class) . ")";
     }
-    if ($comment) {
+    if ($comment && $NL =~ /\n/) {
 	$comment =~ s/^/# /gm;
 	$comment .= "\n" unless $comment =~ /\n\z/;
 	$comment =~ s/^#[ \t]+\n/\n/;
@@ -472,8 +473,8 @@ sub format_list
     if ($comment || (@_ > $indent_lim && (length($tmp) > 60 || $tmp =~ /\n/))) {
 	my @elem = @_;
 	for (@elem) { s/^/$INDENT/gm; }
-	return "\n" . ($comment ? "$INDENT# $comment\n" : "") .
-               join(",\n", @elem, "");
+	return $NL . ($comment && $NL =~ /\n/ ? "$INDENT# $comment\n" : "") .
+               join(",$NL", @elem, "");
     } else {
 	return join(", ", @_);
     }
@@ -675,6 +676,15 @@ be valid Perl.
 
 How long must a binary string be before we try to use the base64 encoding
 for the dump output.  The default is 50.  Set it to 0 to disable base64 dumps.
+
+=item $Data::Dump::NL
+
+Newline character. Defaults to "\n" but can be set to " " (a single space) for
+single-line dumps. Removing newline from this variable will also cause comments
+to not show up.
+
+If you want to generate nicer single-line dumps, also set $Data::Dump::INDENT to
+"".
 
 =back
 
