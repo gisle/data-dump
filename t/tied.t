@@ -4,7 +4,7 @@ use strict;
 use Test qw(plan ok);
 use Data::Dump qw(dump);
 
-plan tests => 4;
+plan tests => 5;
 
 {
     package MyTie;
@@ -60,6 +60,9 @@ ok(nl(dump(\@array)), <<EOT);
   # tied MyTie
   "v0" .. "v3",
 ]
+EOT
+ok(nl(do{ local $Data::Dump::INDENT; dump(\@array)}), <<EOT);
+["v0" .. "v3"]
 EOT
 
 ok(nl(dump($scalar)), <<EOT);

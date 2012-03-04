@@ -24,6 +24,7 @@ sub dump
     local %refcnt;
     local %require;
     local @fixup;
+    $INDENT = "" unless defined $INDENT;
 
     require Data::Dump::FilterContext if @FILTERS;
 
@@ -67,8 +68,13 @@ sub dump
 
     if (%refcnt || %require) {
 	$out .= ";\n";
-	$out =~ s/^/$INDENT/gm;
+	$out =~ s/^/$INDENT/gm if $INDENT;
 	$out = "do {\n$out}";
+    }
+
+    unless ($INDENT) {
+	$out =~ s/^\s*#.*\n//gm;
+	$out =~ s/\n/ /gm;
     }
 
     print STDERR "$out\n" unless defined wantarray;
@@ -326,7 +332,7 @@ sub _dump
 	my $nl = "";
 	my $klen_pad = 0;
 	my $tmp = "@keys @vals";
-	if (length($tmp) > 60 || $tmp =~ /\n/ || $tied) {
+	if ($INDENT && (length($tmp) > 60 || $tmp =~ /\n/ || $tied)) {
 	    $nl = "\n";
 
 	    # Determine what padding to add
@@ -351,7 +357,7 @@ sub _dump
 	    }
 	}
 	$out = "{$nl";
-	$out .= "$INDENT# $tied$nl" if $tied;
+	$out .= "$INDENT# $tied$nl" if $tied && $INDENT;
 	while (@keys) {
 	    my $key = shift @keys;
 	    my $val = shift @vals;
@@ -466,7 +472,7 @@ sub format_list
 	}
     }
     my $tmp = "@_";
-    if ($comment || (@_ > $indent_lim && (length($tmp) > 60 || $tmp =~ /\n/))) {
+    if ($INDENT && ($comment || (@_ > $indent_lim && (length($tmp) > 60 || $tmp =~ /\n/)))) {
 	my @elem = @_;
 	for (@elem) { s/^/$INDENT/gm; }
 	return "\n" . ($comment ? "$INDENT# $comment\n" : "") .
@@ -667,6 +673,9 @@ This holds the string that's used for indenting multiline data structures.
 It's default value is "  " (two spaces).  Set it to "" to suppress indentation.
 Setting it to "| " makes for nice visuals even if the dump output then fails to
 be valid Perl.
+
+Setting this value to "" will make the dumps be output as a single line.
+This will also suppress any comments in the output.
 
 =item $Data::Dump::TRY_BASE64
 

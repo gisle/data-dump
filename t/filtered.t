@@ -2,7 +2,7 @@
 
 use strict;
 use Test qw(plan ok);
-plan tests => 39;
+plan tests => 40;
 
 use Data::Dump qw(dumpf);
 
@@ -58,3 +58,5 @@ ok(dumpf(bless({ a => 1, b => bless {}, "Bar"}, "Foo"), sub {
     return;
 }) =~ /^bless\(.*, "Foo"\)\z/);
 ok($cb_count, 3);
+
+ok(do{ local $Data::Dump::INDENT; dumpf("foo", sub { return { comment => "x" }})}, "\"foo\"");
