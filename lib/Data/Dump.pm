@@ -71,9 +71,6 @@ sub dump
 	$out = "do {\n$out}";
     }
 
-    #use Data::Dumper;   print Dumper(\%refcnt);
-    #use Data::Dumper;   print Dumper(\%seen);
-
     print STDERR "$out\n" unless defined wantarray;
     $out;
 }
