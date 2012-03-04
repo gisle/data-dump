@@ -2,7 +2,7 @@
 
 use strict;
 use Test;
-plan tests => 4;
+plan tests => 5;
 
 use Data::Dump qw(dump);
 
@@ -49,7 +49,24 @@ ok(dump($hash)."\n", <<EOT);
 }
 EOT
 
+$Data::Dump::INDENT = "| ";
+$Data::Dump::TRY_KEY_PADDING = 0;
+ok(dump($hash)."\n", <<EOT);
+{
+| aa => 1,
+| bar => "$DOTS",
+| baz => "$DOTS",
+| foo => "$DOTS",
+| nest => {
+| | bar => "$DOTS",
+| | baz => "$DOTS",
+| | foo => "$DOTS",
+| },
+}
+EOT
+
 $Data::Dump::INDENT = "    ";
+$Data::Dump::TRY_KEY_PADDING = 1;
 ok(dump($hash)."\n", <<EOT);
 {
     aa   => 1,

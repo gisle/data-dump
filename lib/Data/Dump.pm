@@ -13,9 +13,10 @@ $VERSION = "1.21";
 $DEBUG = 0;
 
 use overload ();
-use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS $INDENT);
+use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 $TRY_KEY_PADDING @FILTERS $INDENT);
 
 $TRY_BASE64 = 50 unless defined $TRY_BASE64;
+$TRY_KEY_PADDING = 1 unless defined $TRY_KEY_PADDING;
 $INDENT = "  " unless defined $INDENT;
 
 sub dump
@@ -336,7 +337,10 @@ sub _dump
 	    $nl = "\n";
 
 	    # Determine what padding to add
-	    if ($kstat_max < 4) {
+	    if (!$TRY_KEY_PADDING) {
+		# leave klen_pad as 0
+	    }
+	    elsif ($kstat_max < 4) {
 		$klen_pad = $kstat_max;
 	    }
 	    elsif (@keys >= 2) {
@@ -681,6 +685,11 @@ This will also suppress any comments in the output.
 
 How long must a binary string be before we try to use the base64 encoding
 for the dump output.  The default is 50.  Set it to 0 to disable base64 dumps.
+
+=item $Data::Dump::TRY_KEY_PADDING
+
+Set this value FALSE to disable potential padding of hash keys.
+The default is TRUE.
 
 =back
 
