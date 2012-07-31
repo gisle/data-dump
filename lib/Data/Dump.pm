@@ -13,10 +13,11 @@ $VERSION = "1.21";
 $DEBUG = 0;
 
 use overload ();
-use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS $INDENT);
+use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS $INDENT $MAX_LINE_LENGTH);
 
 $TRY_BASE64 = 50 unless defined $TRY_BASE64;
 $INDENT = "  " unless defined $INDENT;
+$MAX_LINE_LENGTH = 60;
 
 sub dump
 {
@@ -326,7 +327,7 @@ sub _dump
 	my $nl = "";
 	my $klen_pad = 0;
 	my $tmp = "@keys @vals";
-	if (length($tmp) > 60 || $tmp =~ /\n/ || $tied) {
+	if (length($tmp) > $MAX_LINE_LENGTH || $tmp =~ /\n/ || $tied) {
 	    $nl = "\n";
 
 	    # Determine what padding to add
