@@ -68,6 +68,14 @@ sub container_self {
     return Data::Dump::fullname("self", [@$idx[$pidx..(@$idx - 1)]]);
 }
 
+sub expr {
+    my $self = shift;
+    my $top = shift || "var";
+    $top =~ s/^\$//; # it's always added by fullname()
+    my $idx = $self->{idx};
+    return Data::Dump::fullname($top, $idx);
+}
+
 sub object_isa {
     my($self, $class) = @_;
     return $self->{class} && $self->{class}->isa($class);

@@ -155,6 +155,14 @@ subclass.
 Returns how many levels deep have we recursed into the structure (from the
 original dump_filtered() arguments).
 
+=item $ctx->expr
+
+=item $ctx->expr( $top_level_name )
+
+Returns an textual expression that denotes the current object.  In the
+expression C<$var> is used as the name of the top level object dumped.  This
+can be overridden by providing a different name as argument.
+
 =back
 
 =head2 Filter return hash
