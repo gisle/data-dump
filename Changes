@@ -1,3 +1,14 @@
+2013-05-10  Gisle Aas <gisle@ActiveState.com>
+
+   Release 1.22
+
+   Deal with class names containing '=' [RT#72415]
+
+   Filters now get access to $ctx->expr; the textual expression
+   denoting the current object.
+
+
+
 2011-10-15  Gisle Aas <gisle@ActiveState.com>
 
    Release 1.21
