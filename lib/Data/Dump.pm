@@ -481,7 +481,7 @@ sub str {
       for ($_[0]) {
       # Check for repeated string
       if (/^(.)\1\1\1/s) {
-          # seems to be a repating sequence, let's check if it really is
+          # seems to be a repeating sequence, let's check if it really is
           # without backtracking
           unless (/[^\Q$1\E]/) {
               my $base = quote($1);
