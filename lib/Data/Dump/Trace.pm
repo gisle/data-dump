@@ -301,7 +301,7 @@ The following functions are provided:
 
 =item autowrap( $class1 => \%info1, $class2 => \%info2, ... )
 
-Register classes whose objects are are automatically wrapped when
+Register classes whose objects are automatically wrapped when
 returned by one of the call functions below.  If $prefix is provided
 it will be used as to name the objects.
 
