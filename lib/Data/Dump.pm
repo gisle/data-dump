@@ -12,6 +12,7 @@ require Exporter;
 $VERSION = "1.22";
 $DEBUG = 0;
 
+use B;
 use overload ();
 use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS $INDENT);
 
@@ -229,11 +230,14 @@ sub _dump
 	    if (!defined $$rval) {
 		$out = "undef";
 	    }
-	    elsif (do {no warnings 'numeric'; $$rval + 0 eq $$rval}) {
-		$out = $$rval;
-	    }
 	    else {
-		$out = str($$rval);
+		my $f = B::svref_2object($rval)->FLAGS;
+		if ($f & (B::SVp_IOK | B::SVp_NOK) && $$rval + 0 eq $$rval) {
+		    $out = $$rval;
+		}
+		else {
+		    $out = str($$rval);
+		}
 	    }
 	    if ($class && !@$idx) {
 		# Top is an object, not a reference to one as perl needs
