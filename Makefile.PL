@@ -10,6 +10,7 @@ WriteMakefile(
    MIN_PERL_VERSION => 5.006,
    PREREQ_PM => {
        Symbol => 0,
+       'Scalr::Util' => 0,
    },
    META_MERGE => {
        resources => {
@@ -21,6 +22,7 @@ WriteMakefile(
    },
    BUILD_REQUIRES => {
        Test => 0,
+       B    => 0,
    },
 );
 
