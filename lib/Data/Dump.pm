@@ -358,7 +358,7 @@ sub _dump
 	    my $vpad = $INDENT . (" " x ($klen_pad ? $klen_pad + 4 : 0));
 	    $val =~ s/\n/\n$vpad/gm;
 	    my $kpad = $nl ? $INDENT : " ";
-	    $key .= " " x ($klen_pad - length($key)) if $nl;
+	    $key .= " " x ($klen_pad - length($key)) if $nl && $klen_pad > length($key);
 	    $out .= "$kpad$key => $val,$nl";
 	}
 	$out =~ s/,$/ / unless $nl;
