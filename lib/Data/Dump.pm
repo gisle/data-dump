@@ -12,6 +12,7 @@ require Exporter;
 $VERSION = "1.23";
 $DEBUG = 0;
 
+use Scalar::Util qw/looks_like_number/;
 use overload ();
 use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS $INDENT);
 
@@ -229,7 +230,7 @@ sub _dump
 	    if (!defined $$rval) {
 		$out = "undef";
 	    }
-	    elsif (do {no warnings 'numeric'; $$rval + 0 eq $$rval}) {
+	    elsif (looks_like_number($$rval) && $$rval + 0 eq $$rval) {
 		$out = $$rval;
 	    }
 	    else {
