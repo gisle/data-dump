@@ -11,7 +11,7 @@ print "$d;\n";
 
 print "not " unless $d eq q(do {
   my $a = 42;
-  ($a, $a, \\$a, \\\\$a, 42, 42, [\\$a]);
+  ($a, $a, \\$a, \\\\$a, "42", 42, [\\$a]);
 });
 print "ok 1\n";
 

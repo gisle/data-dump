@@ -10,6 +10,7 @@ WriteMakefile(
    MIN_PERL_VERSION => 5.006,
    PREREQ_PM => {
        Symbol => 0,
+       B      => 0,
    },
    META_MERGE => {
        resources => {
