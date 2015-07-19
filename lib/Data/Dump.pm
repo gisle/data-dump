@@ -13,7 +13,8 @@ $VERSION = "1.23";
 $DEBUG = 0;
 
 use overload ();
-use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS $INDENT);
+use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS $INDENT 
+	        $CURRENT_OUTPUT);
 
 $TRY_BASE64 = 50 unless defined $TRY_BASE64;
 $INDENT = "  " unless defined $INDENT;
@@ -75,10 +76,16 @@ sub dump
     $out;
 }
 
-*pp = \&dump;
+sub pp { 
+	$CURRENT_OUTPUT = \*STDERR;
+	&dump;
+	$CURRENT_OUTPUT = undef;
+}
 
 sub dd {
+	$CURRENT_OUTPUT = select;
     print dump(@_), "\n";
+    $CURRENT_OUTPUT = undef;
 }
 
 sub ddx {
@@ -476,7 +483,7 @@ sub format_list
     }
 }
 
-sub str {
+sub str {  
   if (length($_[0]) > 20) {
       for ($_[0]) {
       # Check for repeated string
@@ -540,12 +547,18 @@ sub quote {
 
   s/([\a\b\t\n\f\r\e])/$esc{$1}/g;
 
-  # no need for 3 digits in escape for these
-  s/([\0-\037])(?!\d)/sprintf('\\%o',ord($1))/eg;
 
-  s/([\0-\037\177-\377])/sprintf('\\x%02X',ord($1))/eg;
-  s/([^\040-\176])/sprintf('\\x{%X}',ord($1))/eg;
+  ## probably put this in a global or state var, to keep it computed?
+  unless (defined($CURRENT_OUTPUT) && 
+     	  (grep { /utf-?8/i } PerlIO::get_layers($CURRENT_OUTPUT))) {
 
+	  # no need for 3 digits in escape for these
+	  s/([\0-\037])(?!\d)/sprintf('\\%o',ord($1))/eg;
+
+	  s/([\0-\037\177-\377])/sprintf('\\x%02X',ord($1))/eg;
+	  s/([^\040-\176])/sprintf('\\x{%X}',ord($1))/eg;
+
+  }
   return qq("$_");
 }
 
