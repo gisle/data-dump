@@ -229,6 +229,9 @@ sub _dump
 	    if (!defined $$rval) {
 		$out = "undef";
 	    }
+	    elsif ($$rval =~ /^-?(?:nan|inf)/i) {
+		$out = str($$rval);
+	    }
 	    elsif (do {no warnings 'numeric'; $$rval + 0 eq $$rval}) {
 		$out = $$rval;
 	    }
