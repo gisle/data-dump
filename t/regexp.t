@@ -18,6 +18,7 @@ $a = {
    g => qr,///////,,
    h => qr*/|,:*,
    i => qr*/|,:#*,
+   j => bless(qr/Foo/, "Regexp::Alt"),
 };
 
 ok(Data::Dump::dump($a) . "\n", <<'EOT');
@@ -34,5 +35,6 @@ ok(Data::Dump::dump($a) . "\n", <<'EOT');
   g => qr|///////|,
   h => qr#/|,:#,
   i => qr/\/|,:#/,
+  j => bless(qr/Foo/, "Regexp::Alt"),
 }
 EOT

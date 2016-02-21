@@ -191,7 +191,7 @@ sub _dump
     }
     elsif ($type eq "SCALAR" || $type eq "REF" || $type eq "REGEXP") {
 	if ($ref) {
-	    if ($class && $class eq "Regexp") {
+            if ($type eq "REGEXP") {
 		my $v = "$rval";
 
 		my $mod = "";
@@ -218,7 +218,7 @@ sub _dump
 		$v =~ s/\Q$sep\E/\\$sep/g;
 
 		$out = "qr$sep$v$sep$mod";
-		undef($class);
+		undef($class) if $class && $class eq "Regexp";
 	    }
 	    else {
 		delete $seen{$id} if $type eq "SCALAR";  # will be seen again shortly
