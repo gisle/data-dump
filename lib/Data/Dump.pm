@@ -189,42 +189,11 @@ sub _dump
     if (defined $out) {
 	# keep it
     }
-    elsif ($type eq "SCALAR" || $type eq "REF" || $type eq "REGEXP") {
+    elsif ($type eq "SCALAR" || $type eq "REF") {
 	if ($ref) {
-            if ($type eq "REGEXP") {
-		my $v = "$rval";
-
-		my $mod = "";
-		if ($v =~ /^\(\?\^?([msix-]*):([\x00-\xFF]*)\)\z/) {
-		    $mod = $1;
-		    $v = $2;
-		    $mod =~ s/-.*//;
-		}
-
-		my $sep = '/';
-		my $sep_count = ($v =~ tr/\///);
-		if ($sep_count) {
-		    # see if we can find a better one
-		    for ('|', ',', ':', '#') {
-			my $c = eval "\$v =~ tr/\Q$_\E//";
-			#print "SEP $_ $c $sep_count\n";
-			if ($c < $sep_count) {
-			    $sep = $_;
-			    $sep_count = $c;
-			    last if $sep_count == 0;
-			}
-		    }
-		}
-		$v =~ s/\Q$sep\E/\\$sep/g;
-
-		$out = "qr$sep$v$sep$mod";
-		undef($class) if $class && $class eq "Regexp";
-	    }
-	    else {
-		delete $seen{$id} if $type eq "SCALAR";  # will be seen again shortly
-		my $val = _dump($$rval, $name, [@$idx, "\$"], 0, $pclass, $pidx);
-		$out = $class ? "do{\\(my \$o = $val)}" : "\\$val";
-	    }
+	    delete $seen{$id} if $type eq "SCALAR";  # will be seen again shortly
+	    my $val = _dump($$rval, $name, [@$idx, "\$"], 0, $pclass, $pidx);
+	    $out = $class ? "do{\\(my \$o = $val)}" : "\\$val";
 	} else {
 	    if (!defined $$rval) {
 		$out = "undef";
@@ -366,6 +335,35 @@ sub _dump
 	}
 	$out =~ s/,$/ / unless $nl;
 	$out .= "}";
+    }
+    elsif ($type eq "REGEXP") {
+	my $v = "$rval";
+
+	my $mod = "";
+	if ($v =~ /^\(\?\^?([msix-]*):([\x00-\xFF]*)\)\z/) {
+	    $mod = $1;
+	    $v = $2;
+	    $mod =~ s/-.*//;
+	}
+
+	my $sep = '/';
+	my $sep_count = ($v =~ tr/\///);
+	if ($sep_count) {
+	    # see if we can find a better one
+	    for ('|', ',', ':', '#') {
+		my $c = eval "\$v =~ tr/\Q$_\E//";
+		#print "SEP $_ $c $sep_count\n";
+		if ($c < $sep_count) {
+		    $sep = $_;
+		    $sep_count = $c;
+		    last if $sep_count == 0;
+		}
+	    }
+	}
+	$v =~ s/\Q$sep\E/\\$sep/g;
+
+	$out = "qr$sep$v$sep$mod";
+	undef($class) if $class && $class eq "Regexp";
     }
     elsif ($type eq "CODE") {
 	$out = 'sub { ... }';
