@@ -13,10 +13,11 @@ $VERSION = "1.23";
 $DEBUG = 0;
 
 use overload ();
-use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS $INDENT);
+use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS $INDENT $DO_NOT_CODEPOINT_OF_UTF8);
 
 $TRY_BASE64 = 50 unless defined $TRY_BASE64;
 $INDENT = "  " unless defined $INDENT;
+$DO_NOT_CODEPOINT_TO_UTF8 = 0;
 
 sub dump
 {
@@ -547,7 +548,7 @@ sub quote {
   s/([\0-\037])(?!\d)/sprintf('\\%o',ord($1))/eg;
 
   s/([\0-\037\177-\377])/sprintf('\\x%02X',ord($1))/eg;
-  s/([^\040-\176])/sprintf('\\x{%X}',ord($1))/eg;
+  s/([^\040-\176])/sprintf('\\x{%X}',ord($1))/eg unless $Data::Dump::DO_NOT_CODEPOINT_OF_UTF8;
 
   return qq("$_");
 }
