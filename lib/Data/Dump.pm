@@ -13,10 +13,11 @@ $VERSION = "1.23";
 $DEBUG = 0;
 
 use overload ();
-use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS $INDENT);
+use vars qw(%seen %refcnt @dump @fixup %require $TRY_BASE64 @FILTERS $INDENT $BREAKWIDTH);
 
 $TRY_BASE64 = 50 unless defined $TRY_BASE64;
 $INDENT = "  " unless defined $INDENT;
+$BREAKWIDTH = 60 unless defined $BREAKWIDTH;
 
 sub dump
 {
@@ -329,7 +330,7 @@ sub _dump
 	my $nl = "";
 	my $klen_pad = 0;
 	my $tmp = "@keys @vals";
-	if (length($tmp) > 60 || $tmp =~ /\n/ || $tied) {
+	if (length($tmp) > $BREAKWIDTH || $tmp =~ /\n/ || $tied) {
 	    $nl = "\n";
 
 	    # Determine what padding to add
@@ -469,7 +470,7 @@ sub format_list
 	}
     }
     my $tmp = "@_";
-    if ($comment || (@_ > $indent_lim && (length($tmp) > 60 || $tmp =~ /\n/))) {
+    if ($comment || (@_ > $indent_lim && (length($tmp) > $BREAKWIDTH || $tmp =~ /\n/))) {
 	my @elem = @_;
 	for (@elem) { s/^/$INDENT/gm; }
 	return "\n" . ($comment ? "$INDENT# $comment\n" : "") .
@@ -670,6 +671,12 @@ This holds the string that's used for indenting multiline data structures.
 It's default value is "  " (two spaces).  Set it to "" to suppress indentation.
 Setting it to "| " makes for nice visuals even if the dump output then fails to
 be valid Perl.
+
+=item $Data::Dump::BREAKWIDTH
+
+How long can a string get before we add a carriage return. The default is 60.
+
+It can be useful to set this to 1 to force all pairs to be on their own lines.
 
 =item $Data::Dump::TRY_BASE64
 
